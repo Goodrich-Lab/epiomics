@@ -9,6 +9,8 @@ You can install epiomics from [GitHub](https://github.com/) with:
 ``` r
 # install.packages("devtools")
 devtools::install_github("JAGoodrich/epiomics")
+
+library(epiomics)
 ```
 
 ## 'Omics wide association study (owas) 
