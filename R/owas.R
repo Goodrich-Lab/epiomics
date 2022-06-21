@@ -23,7 +23,7 @@
 #' @param model_type "linear" for linear models (via lm) or "logistic" for 
 #' logistic (via glm) 
 #' @param confidence_level Confidence level for marginal significance 
-#' (defaults to 0.05)
+#' (defaults to 0.95, or an alpha of 0.05)
 #' 
 #' @returns 
 #' A data frame with 6 columns:  
@@ -87,8 +87,8 @@ owas <- compiler::cmpfun(
            covars,
            var_exposure_or_outcome, 
            model_type = "linear", 
-           confidence_level = 0.05){
-    
+           confidence_level = 0.95){
+    alpha = 1-confidence_level
     # Change data frame to data table for speed
     df <- data.table(df)
     
@@ -170,8 +170,7 @@ owas <- compiler::cmpfun(
     # Calculate adjusted p value
     final_results$adjusted_pval = p.adjust(final_results$p_value, method = "fdr")
     
-    final_results$threshold = ifelse(final_results$adjusted_pval < 
-                                       confidence_level, 
+    final_results$threshold = ifelse(final_results$adjusted_pval < alpha, 
                                      "Significant",
                                      "Non-significant")
     

@@ -11,7 +11,7 @@ owas(
   covars,
   var_exposure_or_outcome,
   model_type = "linear",
-  confidence_level = 0.05
+  confidence_level = 0.95
 )
 }
 \arguments{
@@ -35,7 +35,7 @@ representing the reference group.}
 logistic (via glm)}
 
 \item{confidence_level}{Confidence level for marginal significance
-(defaults to 0.05)}
+(defaults to 0.95, or an alpha of 0.05)}
 }
 \value{
 A data frame with 6 columns:
