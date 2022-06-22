@@ -10,7 +10,7 @@ owas(
   omics,
   covars,
   var_exposure_or_outcome,
-  model_type = "linear",
+  family = "gaussian",
   confidence_level = 0.95
 )
 }
@@ -19,8 +19,8 @@ owas(
 
 \item{var}{Name of the variable of interest- this is usually either an
 exposure variable or an outcome variable. Can be either continuous or
-dichotomous. For dichotomous variables, must set \code{model_type} to
-"logistic", and values must be either 0/1 or a factor with the first level
+dichotomous. For dichotomous variables, must set \code{family} to
+"binomial", and values must be either 0/1 or a factor with the first level
 representing the reference group.}
 
 \item{omics}{Names of all omics features in the dataset}
@@ -31,7 +31,7 @@ representing the reference group.}
 (independent variable) or outcome (dependent variable)? Must be either
 "exposure" or "outcome"}
 
-\item{model_type}{"linear" for linear models (via lm) or "logistic" for
+\item{family}{"gaussian" (defualt) for linear models (via lm) or "binomial" for
 logistic (via glm)}
 
 \item{confidence_level}{Confidence level for marginal significance
@@ -69,10 +69,10 @@ colnames(omics_df) <- paste0("feature_", colnames(omics_df))
 # Simulate covariates and outcomes
 cov_out <- data.frame(id = c(1:n_ids), 
                       sex = sample(c("male", "female"), 
-                                   n_ids, replace=T,prob=c(.5,.5)),
+                                   n_ids, replace=TRUE,prob=c(.5,.5)),
                       age = rnorm(10, 10, 2),
-                      pfos = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                      disease = sample(0:1, n_ids, replace=T,prob=c(.9,.1)),
+                      exposure = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
                       weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
 
 # Create Test Data
@@ -84,11 +84,11 @@ colnames_omic_fts <- colnames(test_data)[grep("feature_",
 
 # Run function with continuous exposure as the variable of interest
 owas(df = test_data, 
-     var = "pfos", 
+     var = "exposure", 
      omics = colnames_omic_fts, 
      covars = c("age", "sex"), 
      var_exposure_or_outcome = "exposure", 
-     model_type = "linear")
+     family = "gaussian")
 
 
 # Run function with dichotomous outcome as the variable of interest
@@ -97,7 +97,7 @@ owas(df = test_data,
      omics = colnames_omic_fts, 
      covars = c("age", "sex"), 
      var_exposure_or_outcome = "outcome", 
-     model_type = "logistic")
+     family = "binomial")
  
 
 }

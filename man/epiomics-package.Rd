@@ -4,12 +4,12 @@
 \name{epiomics-package}
 \alias{epiomics}
 \alias{epiomics-package}
-\title{epiomics: What the Package Does (One Line, Title Case)}
+\title{epiomics: Functions for analyzing 'omics data in observational studies}
 \description{
-What the package does (one paragraph).
+epiomics provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Jesse Goodrich \email{jagoodri@usc.edu} (\href{https://orcid.org/0000-0001-6615-0472}{ORCID})
 
 }
 \keyword{internal}

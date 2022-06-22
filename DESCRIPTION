@@ -1,10 +1,10 @@
 Package: epiomics
-Title: What the Package Does (One Line, Title Case)
+Title: Functions for analyzing 'omics data in observational studies
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Jesse", "Goodrich", , "jagoodri@usc.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6615-0472"))
+Description: epiomics provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.  
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

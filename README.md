@@ -1,6 +1,6 @@
 # epiomics: Functions for omics data analysis in observational studies
 
-**epiomics** provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies. 
+**epiomics** provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.
 
 ## Installation
 
@@ -13,12 +13,12 @@ devtools::install_github("JAGoodrich/epiomics")
 library(epiomics)
 ```
 
-## 'Omics wide association study (owas) 
+## Omics wide association study (owas)
 
-The basis of many omics analysis in epidemiology begin with an 'omics wide association study. The function `owas()` implements an omics wide association study with the option of using the 'omics data as either the dependent variable (i.e., for performing an exposure --> 'omics analysis) or using the 'omics as the independent variable (i.e., for performing an 'omics --> outcome analysis). `owas()` provides the option to adjust for covariates, and allows for either continuous or dichotomous outcomes.  
+The basis of many omics analysis in epidemiology begin with an omics wide association study. The function `owas()` implements an omics wide association study with the option of using the 'omics data as either the dependent variable (i.e., for performing an exposure --\> 'omics analysis) or using the 'omics as the independent variable (i.e., for performing an 'omics --\> outcome analysis). `owas()` provides the option to adjust for covariates, and allows for either continuous or dichotomous outcomes.
 
+Start with simulating data:
 
-Start with simulating data: 
 ``` r
 # Simulate dataset
 set.seed(4656)
@@ -33,10 +33,10 @@ colnames(omics_df) <- paste0("feature_", colnames(omics_df))
 # Simulate covariates and outcomes
 cov_out <- data.frame(id = c(1:n_ids), 
                       sex = sample(c("male", "female"), 
-                                   n_ids, replace=T,prob=c(.5,.5)),
+                                   n_ids, replace=TRUE,prob=c(.5,.5)),
                       age = rnorm(10, 10, 2),
-                      pfos = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                      disease = sample(0:1, n_ids, replace=T,prob=c(.9,.1)),
+                      exposure = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
                       weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
 
 # Create Test Data
@@ -48,18 +48,23 @@ colnames_omic_fts <- colnames(test_data)[grep("feature_",
                                                
 ```
 
-
-### Run owas with continuous exposure as the variable of interest  
+### Run owas with continuous exposure as the variable of interest
 
 ``` r
 owas(df = test_data, 
-     var = "pfos", 
+     var = "exposure", 
      omics = colnames_omic_fts, 
      covars = c("age", "sex"), 
      var_exposure_or_outcome = "exposure", 
-     model_type = "linear")
+     family = "gaussian")
+     
+# Equivalent: 
+owas(df = test_data, 
+     var = "exposure", 
+     omics = colnames_omic_fts, 
+     covars = c("age", "sex"), 
+     var_exposure_or_outcome = "exposure")  
 ```
-
 
 ### Run owas with dichotomous outcome as the variable of interest
 
@@ -69,5 +74,48 @@ owas(df = test_data,
      omics = colnames_omic_fts, 
      covars = c("age", "sex"), 
      var_exposure_or_outcome = "outcome", 
-     model_type = "logistic")
+     family = "binomial")
+```
+
+
+## Meet in the Middle
+
+The function `meet_in_middle()` conducts meet in the middle screening between an exposure, omics, and an outcome, as described by Cadiou et al., 2021. This function provides the option to adjust for covariates, and allows for either continuous or dichotomous outcomes. Examples are based on the simulated data created above. 
+
+### Meet in the middle with a dichotomous outcome
+
+``` r
+res <- meet_in_middle(df = test_data,
+                      exposure = "exposure", 
+                      outcome = "disease", 
+                      omics = colnames_omic_fts,
+                      covars = c("age", "sex"), 
+                      outcome_family = "binomial")
+res
 ``` 
+
+
+### Meet in the middle with a continuous outcome 
+
+``` r
+res <- meet_in_middle(df = test_data,
+                      exposure = "exposure", 
+                      outcome = "weight", 
+                      omics = colnames_omic_fts,
+                      covars = c("age", "sex"), 
+                      outcome_family = "gaussian")
+
+res
+``` 
+
+
+### Meet in the middle with a continuous outcome and no covariates
+
+``` r 
+res <- meet_in_middle(df = test_data,
+                      exposure = "exposure", 
+                      outcome = "weight", 
+                      omics = colnames_omic_fts,
+                      outcome_family = "gaussian")
+res
+```

@@ -8,19 +8,20 @@
 #' covariates. 
 #' 
 #' @import data.table
+#' @importFrom stats binomial coef glm lm p.adjust  
 #' @export 
 #' @param df Dataset
 #' @param var Name of the variable of interest- this is usually either an 
 #' exposure variable or an outcome variable. Can be either continuous or 
-#' dichotomous. For dichotomous variables, must set \code{model_type} to
-#'  "logistic", and values must be either 0/1 or a factor with the first level 
+#' dichotomous. For dichotomous variables, must set \code{family} to
+#'  "binomial", and values must be either 0/1 or a factor with the first level 
 #'  representing the reference group.
 #' @param omics Names of all omics features in the dataset 
 #' @param covars Names of covariates (can be NULL)
 #' @param var_exposure_or_outcome Is the variable of interest an exposure 
 #' (independent variable) or outcome (dependent variable)? Must be either
 #' "exposure" or "outcome"
-#' @param model_type "linear" for linear models (via lm) or "logistic" for 
+#' @param family "gaussian" (defualt) for linear models (via lm) or "binomial" for 
 #' logistic (via glm) 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95, or an alpha of 0.05)
@@ -49,10 +50,10 @@
 #' # Simulate covariates and outcomes
 #' cov_out <- data.frame(id = c(1:n_ids), 
 #'                       sex = sample(c("male", "female"), 
-#'                                    n_ids, replace=T,prob=c(.5,.5)),
+#'                                    n_ids, replace=TRUE,prob=c(.5,.5)),
 #'                       age = rnorm(10, 10, 2),
-#'                       pfos = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                       disease = sample(0:1, n_ids, replace=T,prob=c(.9,.1)),
+#'                       exposure = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+#'                       disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
 #'                       weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
 #' 
 #' # Create Test Data
@@ -64,11 +65,11 @@
 #' 
 #' # Run function with continuous exposure as the variable of interest
 #' owas(df = test_data, 
-#'      var = "pfos", 
+#'      var = "exposure", 
 #'      omics = colnames_omic_fts, 
 #'      covars = c("age", "sex"), 
 #'      var_exposure_or_outcome = "exposure", 
-#'      model_type = "linear")
+#'      family = "gaussian")
 #' 
 #' 
 #' # Run function with dichotomous outcome as the variable of interest
@@ -77,7 +78,7 @@
 #'      omics = colnames_omic_fts, 
 #'      covars = c("age", "sex"), 
 #'      var_exposure_or_outcome = "outcome", 
-#'      model_type = "logistic")
+#'      family = "binomial")
 #'  
 #' 
 owas <- compiler::cmpfun(
@@ -86,7 +87,7 @@ owas <- compiler::cmpfun(
            omics, 
            covars,
            var_exposure_or_outcome, 
-           model_type = "linear", 
+           family = "gaussian", 
            confidence_level = 0.95){
     alpha = 1-confidence_level
     # Change data frame to data table for speed
@@ -129,7 +130,7 @@ owas <- compiler::cmpfun(
     
     
     # Run models -------------------------
-    if(model_type == "linear"){
+    if(family == "gaussian"){
       # Linear models:
       res <- dt_l[, 
                   {fit <- lm(mod_formula, data = .SD) 
@@ -146,7 +147,7 @@ owas <- compiler::cmpfun(
                              feature_name ~ V2, 
                              value.var = "V1")[,c(1, 2, 4, 3)]
       
-    } else if(model_type == "logistic"){
+    } else if(family == "binomial"){
       # Logistic models
       res <- dt_l[, 
                   {fit <- glm(mod_formula, data = .SD, family=binomial(link='logit')) 
@@ -164,7 +165,7 @@ owas <- compiler::cmpfun(
                              value.var = "V1")[,c(1, 2, 4, 3)]
       
     } else {
-      stop("model_type must be either \"linear\" or \"logistic\" ")
+      stop("family must be either \"gaussian\" or \"binomial\" ")
     }
     
     # Calculate adjusted p value
