@@ -32,6 +32,7 @@
 #' estimate: the model estimate for the feature. For linear models, this is the 
 #' beta; for logistic models, this is the log odds. 
 #' se: Standard error of the estimate
+#' test statistic: t-value
 #' p_value: p-value for the estimate
 #' adjusted_pval: FDR adjusted p-value
 #' threshold: Marginal significance, based on unadjusted p-values 
@@ -85,11 +86,28 @@ owas <- compiler::cmpfun(
   function(df, 
            var,
            omics, 
-           covars,
+           covars = NULL,
            var_exposure_or_outcome, 
            family = "gaussian", 
            confidence_level = 0.95){
+    
     alpha = 1-confidence_level
+    
+    # Check for issues in data 
+    # Check if variable of interest is in data
+    if(!(var %in% colnames(df))){ 
+      stop(paste0("Variable '", var, "' not found in data. Check data.") ) 
+    }    
+    # Check if all omics features are in the data
+    if(FALSE %in% (omics %in% colnames(df))){ 
+      stop("Not all omics variables are found in the data. Check omics column names.")  
+    }    
+    # Check if covars are in data
+    if(FALSE %in% (covars %in% colnames(df))){ 
+      stop("Not all covariates are found in the data. Check covariate column names.") 
+    }    
+    
+
     # Change data frame to data table for speed
     df <- data.table(df)
     
@@ -135,34 +153,36 @@ owas <- compiler::cmpfun(
       res <- dt_l[, 
                   {fit <- lm(mod_formula, data = .SD) 
                   coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                     c(1, 2, 4)] # Select Estimate, Std Error, and p_val
+                                     c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
                   }, 
                   by = feature_name]
       
       # Add column for estimate 
-      res <- cbind(res, c("estimate", "se", "p_value"))
+      res <- cbind(res, c("estimate", "se", "test_statistic", "p_value"))
       
       # Pivot wider
       final_results <- dcast(data = res, 
                              feature_name ~ V2, 
-                             value.var = "V1")[,c(1, 2, 4, 3)]
+                             value.var = "V1")[,c(1, 2, 4, 5, 3)]
       
     } else if(family == "binomial"){
       # Logistic models
       res <- dt_l[, 
-                  {fit <- glm(mod_formula, data = .SD, family=binomial(link='logit')) 
+                  {fit <- glm(mod_formula, 
+                              data = .SD, 
+                              family=binomial(link='logit')) 
                   coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                     c(1, 2, 4)] # Select Estimate, Std Error, and p_val
+                                     c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
                   }, 
                   by = feature_name]
       
       # Add column for estimate 
-      res <- cbind(res, c("estimate", "se", "p_value"))
+      res <- cbind(res, c("estimate", "se", "test_statistic", "p_value"))
       
       # Pivot wider
       final_results <- dcast(data = res, 
                              feature_name ~ V2, 
-                             value.var = "V1")[,c(1, 2, 4, 3)]
+                             value.var = "V1")[,c(1, 2, 4, 5, 3)]
       
     } else {
       stop("family must be either \"gaussian\" or \"binomial\" ")

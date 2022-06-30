@@ -92,6 +92,8 @@ meet_in_middle <- compiler::cmpfun(
            outcome_family = "gaussian",
            confidence_level = 0.95){
     alpha = 1-confidence_level
+    
+    df <- data.table::as.data.table(df)
     # exposure_omics_owas
     exposure_omics_owas <- epiomics::owas(df = df,
                                           var = exposure, 
