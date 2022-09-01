@@ -18,6 +18,9 @@
 #' logistic (via glm) 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95)
+#' @param conf_int Should Confidence intervals be generated for the estimates? 
+#' Default is FALSE. Setting to TRUE will take longer. For logistic models, 
+#' calculates Wald confidence intervals via \code{confint.default}.
 #' 
 #' @returns 
 #' A list of three dataframes, containing: 
@@ -90,7 +93,8 @@ meet_in_middle <- compiler::cmpfun(
            omics,
            covars = NULL,
            outcome_family = "gaussian",
-           confidence_level = 0.95){
+           confidence_level = 0.95, 
+           conf_int = FALSE){
     alpha = 1-confidence_level
     
     df <- data.table::as.data.table(df)
@@ -101,7 +105,8 @@ meet_in_middle <- compiler::cmpfun(
                                           covars = covars,
                                           var_exposure_or_outcome = "exposure", 
                                           family = "gaussian",
-                                          confidence_level = confidence_level)
+                                          confidence_level = confidence_level, 
+                                          conf_int = conf_int)
     
     
     # omics_outcome_owas
@@ -111,7 +116,8 @@ meet_in_middle <- compiler::cmpfun(
                                          covars = covars,
                                          var_exposure_or_outcome = "outcome", 
                                          family = outcome_family,
-                                         confidence_level = confidence_level)
+                                         confidence_level = confidence_level, 
+                                         conf_int = conf_int)
     
     # Find overlap
     x_o_fts <- exposure_omics_owas[exposure_omics_owas$p_value<alpha]$feature_name

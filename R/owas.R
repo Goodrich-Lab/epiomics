@@ -8,7 +8,7 @@
 #' covariates. 
 #' 
 #' @import data.table
-#' @importFrom stats binomial coef glm lm p.adjust  
+#' @importFrom stats binomial coef glm lm p.adjust confint confint.default 
 #' @export 
 #' @param df Dataset
 #' @param var Name of the variable of interest- this is usually either an 
@@ -25,6 +25,9 @@
 #' logistic (via glm) 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95, or an alpha of 0.05)
+#' @param conf_int Should Confidence intervals be generated for the estimates? 
+#' Default is FALSE. Setting to TRUE will take longer. For logistic models, 
+#' calculates Wald confidence intervals via \code{confint.default}.
 #' 
 #' @returns 
 #' A data frame with 6 columns:  
@@ -89,7 +92,8 @@ owas <- compiler::cmpfun(
            covars = NULL,
            var_exposure_or_outcome, 
            family = "gaussian", 
-           confidence_level = 0.95){
+           confidence_level = 0.95, 
+           conf_int = FALSE){
     
     alpha = 1-confidence_level
     
@@ -107,7 +111,7 @@ owas <- compiler::cmpfun(
       stop("Not all covariates are found in the data. Check covariate column names.") 
     }    
     
-
+    
     # Change data frame to data table for speed
     df <- data.table(df)
     
@@ -148,50 +152,103 @@ owas <- compiler::cmpfun(
     
     
     # Run models -------------------------
-    if(family == "gaussian"){
-      # Linear models:
-      res <- dt_l[, 
-                  {fit <- lm(mod_formula, data = .SD) 
-                  coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                     c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
-                  }, 
-                  by = feature_name]
+    ## If no confidence intervals are requested: -----------------
+    if(!conf_int){
+      if(family == "gaussian"){
+        # Linear models:
+        res <- dt_l[, 
+                    {fit <- lm(mod_formula, data = .SD) 
+                    coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
+                                       c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
+                    }, 
+                    by = feature_name]
+        
+        # Add column for estimate 
+        res <- cbind(res, c("estimate", "se", "test_statistic", "p_value"))
+        
+        # Pivot wider
+        final_results <- dcast(data = res, 
+                               feature_name ~ V2, 
+                               value.var = "V1")[,c(1, 2, 4, 5, 3)]
+        
+      } else if(family == "binomial"){
+        # Logistic models
+        res <- dt_l[, 
+                    {fit <- glm(mod_formula, 
+                                data = .SD, 
+                                family=binomial(link='logit')) 
+                    coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
+                                       c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
+                    }, 
+                    by = feature_name]
+        
+        # Add column for estimate 
+        res <- cbind(res, c("estimate", "se", "test_statistic", "p_value"))
+        
+        # Pivot wider
+        final_results <- dcast(data = res, 
+                               feature_name ~ V2, 
+                               value.var = "V1")[,c(1, 2, 4, 5, 3)]
+        
+      } else {
+        stop("family must be either \"gaussian\" or \"binomial\" ")
+      }
       
-      # Add column for estimate 
-      res <- cbind(res, c("estimate", "se", "test_statistic", "p_value"))
-      
-      # Pivot wider
-      final_results <- dcast(data = res, 
-                             feature_name ~ V2, 
-                             value.var = "V1")[,c(1, 2, 4, 5, 3)]
-      
-    } else if(family == "binomial"){
-      # Logistic models
-      res <- dt_l[, 
-                  {fit <- glm(mod_formula, 
-                              data = .SD, 
-                              family=binomial(link='logit')) 
-                  coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                     c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
-                  }, 
-                  by = feature_name]
-      
-      # Add column for estimate 
-      res <- cbind(res, c("estimate", "se", "test_statistic", "p_value"))
-      
-      # Pivot wider
-      final_results <- dcast(data = res, 
-                             feature_name ~ V2, 
-                             value.var = "V1")[,c(1, 2, 4, 5, 3)]
-      
-    } else {
-      stop("family must be either \"gaussian\" or \"binomial\" ")
+    } else if(conf_int){
+      ## If confidence intervals are requested: --------------------
+      if(family == "gaussian"){
+        # Linear models:
+        res <- dt_l[, 
+                    {fit <- lm(mod_formula, data = .SD) 
+                    out <- coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
+                                       c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
+                    ci <- confint(fit)[length(coef(fit)), ]# Select last row
+                    c(out,ci)
+                    }, 
+                    by = feature_name]
+        
+        # Add column for estimate 
+        res <- cbind(res, c("estimate", "se", "test_statistic",
+                            "p_value", "conf_low", "conf_high"))
+        
+        # Pivot wider
+        final_results <- dcast(data = res, 
+                               feature_name ~ V2, 
+                               value.var = "V1")[,c(1, 4, 6, 7, 5, 3, 2)]
+        
+      } else if(family == "binomial"){
+        # Logistic models
+        res <- dt_l[, 
+                    {fit <- glm(mod_formula, 
+                                data = .SD, 
+                                family=binomial(link='logit')) 
+                    out <- coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
+                                              c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
+                    ci <- confint.default(fit)[length(coef(fit)), ]# Select last row
+                    c(out,ci)
+                    }, 
+                    by = feature_name]
+        
+        # Add column for estimate 
+        res <- cbind(res, c("estimate", "se", "test_statistic",
+                            "p_value", "conf_low", "conf_high"))
+        
+        # Pivot wider
+        final_results <- dcast(data = res, 
+                               feature_name ~ V2, 
+                               value.var = "V1")[,c(1, 4, 6, 7, 5, 3, 2)]
+        
+      } else {
+        stop("family must be either \"gaussian\" or \"binomial\" ")
+      }
     }
     
-    # Calculate adjusted p value
-    final_results$adjusted_pval = p.adjust(final_results$p_value, method = "fdr")
     
-    final_results$threshold = ifelse(final_results$adjusted_pval < alpha, 
+    # Calculate adjusted p value
+    final_results$adjusted_pval = p.adjust(final_results$p_value,
+                                           method = "fdr")
+    
+    final_results$threshold = ifelse(final_results$p_value < alpha,
                                      "Significant",
                                      "Non-significant")
     

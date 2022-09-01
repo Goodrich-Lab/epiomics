@@ -11,7 +11,8 @@ owas(
   covars = NULL,
   var_exposure_or_outcome,
   family = "gaussian",
-  confidence_level = 0.95
+  confidence_level = 0.95,
+  conf_int = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,10 @@ logistic (via glm)}
 
 \item{confidence_level}{Confidence level for marginal significance
 (defaults to 0.95, or an alpha of 0.05)}
+
+\item{conf_int}{Should Confidence intervals be generated for the estimates?
+Default is FALSE. Setting to TRUE will take longer. For logistic models,
+calculates Wald confidence intervals via \code{confint.default}.}
 }
 \value{
 A data frame with 6 columns:
