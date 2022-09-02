@@ -1,17 +1,18 @@
 #' Perform 'omics wide association study
 #' @description 
 #' Implements a meet in the middle analysis for identifying omics associated 
-#' with both exposures and outcomes, as described by 
+#' with both exposures and outcomes, as described by Chadeau-Hyam et al., 2010.
 #' 
 #' @import data.table
 #' @export 
 #' @param df Dataframe
 #' @param exposure Name of the exposure of interest. Can be either continuous or 
-#' dichotomous. 
+#' dichotomous. Currently, only a single exposure is supported.
 #' @param outcome Name of the outcome of interest. Can be either continuous or 
 #' dichotomous. For dichotomous variables, must set \code{outcome_family} to
 #'  "logistic", and values must be either 0/1 or a factor with the first level 
-#'  representing the reference group.
+#'  representing the reference group. Currently, only a single outcome is 
+#'  supported.
 #' @param omics Names of all omics features in the dataset 
 #' @param covars Names of covariates (can be NULL)
 #' @param outcome_family "gaussian" for linear models (via lm) or "binomial" for 
@@ -44,7 +45,7 @@
 #' # Simulate omics
 #' omics_df <- matrix(nrow = n_ids,
 #'                    ncol = n_omic_ftrs)
-#' omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_omic_ftrs)})
+#' omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
 #' omics_df <- as.data.frame(omics_df)
 #' colnames(omics_df) <- paste0("feature_", colnames(omics_df))
 #' # Simulate covariates and outcomes
@@ -52,9 +53,12 @@
 #'                       sex = sample(c("male", "female"),
 #'                                    n_ids, replace=TRUE,prob=c(.5,.5)),
 #'                       age = rnorm(10, 10, 2),
-#'                       exposure = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                       disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
-#'                       weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
+#'                       weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2),
+#'                       exposure1 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+#'                       exposure2 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+#'                       exposure3 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+#'                       disease1 = sample(0:1, n_ids, replace=TRUE, prob=c(.9,.1)), 
+#'                       disease2 = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)))
 #' 
 #' # Create Test Data
 #' test_data <- cbind(cov_out, omics_df)
@@ -65,15 +69,15 @@
 #' 
 #' # Meet in the middle with a dichotomous outcome
 #' res <- meet_in_middle(df = test_data,
-#'                       exposure = "exposure", 
-#'                       outcome = "disease", 
+#'                       exposure = "exposure1", 
+#'                       outcome = "disease1", 
 #'                       omics = colnames_omic_fts,
 #'                       covars = c("age", "sex"), 
 #'                       outcome_family = "binomial")
 #' 
 #' # Meet in the middle with a continuous outcome 
 #' res <- meet_in_middle(df = test_data,
-#'                       exposure = "exposure", 
+#'                       exposure = "exposure1", 
 #'                       outcome = "weight", 
 #'                       omics = colnames_omic_fts,
 #'                       covars = c("age", "sex"), 
@@ -81,7 +85,7 @@
 #' 
 #' # Meet in the middle with a continuous outcome and no covariates
 #' res <- meet_in_middle(df = test_data,
-#'                       exposure = "exposure", 
+#'                       exposure = "exposure1", 
 #'                       outcome = "weight", 
 #'                       omics = colnames_omic_fts,
 #'                       outcome_family = "gaussian")
@@ -97,6 +101,12 @@ meet_in_middle <- compiler::cmpfun(
            conf_int = FALSE){
     alpha = 1-confidence_level
     
+    # Check if more than one exposure
+    if((length(exposure)+length(outcome))>2){ 
+      stop("More than one exposure or outcome is not currently supported.") 
+    }   
+    
+    
     df <- data.table::as.data.table(df)
     # exposure_omics_owas
     exposure_omics_owas <- epiomics::owas(df = df,
@@ -108,7 +118,6 @@ meet_in_middle <- compiler::cmpfun(
                                           confidence_level = confidence_level, 
                                           conf_int = conf_int)
     
-    
     # omics_outcome_owas
     omics_outcome_owas <- epiomics::owas(df = df,
                                          var = outcome, 
@@ -119,20 +128,34 @@ meet_in_middle <- compiler::cmpfun(
                                          confidence_level = confidence_level, 
                                          conf_int = conf_int)
     
-    # Find overlap
-    x_o_fts <- exposure_omics_owas[exposure_omics_owas$p_value<alpha]$feature_name
-    o_y_fts <- omics_outcome_owas[omics_outcome_owas$p_value<alpha]$feature_name
-    overlap_fts <- x_o_fts[x_o_fts %in% o_y_fts]
     
+    # Find overlap
+    x_o_fts <- exposure_omics_owas[exposure_omics_owas$p_value<alpha,]$feature_name
+    o_y_fts <- omics_outcome_owas[omics_outcome_owas$p_value<alpha,]$feature_name
+    overlap_fts <- intersect(x_o_fts, o_y_fts)
+    
+    # Create overlapping data frame
     if(length(overlap_fts)>0){
       # Subset only overlapping sig
-      x_o <- exposure_omics_owas[exposure_omics_owas$feature_name %in% overlap_fts]
-      names(x_o) <- paste0(colnames(x_o), c("", rep("_exp_omic", ncol(x_o)-1 )))
-      o_y <- omics_outcome_owas[omics_outcome_owas$feature_name %in% overlap_fts]
-      names(o_y) <- paste0(colnames(o_y), c("", rep("_omic_out", ncol(x_o)-1 )))
+      # Exposure-feature
+      x_o <- exposure_omics_owas[exposure_omics_owas$feature_name %in% overlap_fts,]
+      colnames(x_o) <- c("exposure_name", 
+                         paste0(colnames(x_o)[-1],
+                                c("",rep("_exp_omic", ncol(x_o)-2))))
+      # feature-outcome
+      o_y <- omics_outcome_owas[omics_outcome_owas$feature_name %in% overlap_fts,]
+      colnames(o_y) <- c("outcome_name", 
+                         paste0(colnames(o_y)[-1],
+                                c("",rep("_omic_out", ncol(o_y)-2))))
       
       # Merge
-      overlap <- merge(x_o, o_y, by = "feature_name")
+      overlap <- merge(x_o, o_y, by = c("feature_name")) 
+      # Reorder
+      first_cols <- c("exposure_name", "outcome_name", "feature_name")
+      overlap <- overlap[,c(first_cols, 
+                            setdiff(colnames(overlap), first_cols))]
+      
+      
     } else {overlap = NULL}
     
     final_results <- list(exposure_omics_owas = exposure_omics_owas, 

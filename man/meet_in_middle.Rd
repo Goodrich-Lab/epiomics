@@ -19,12 +19,13 @@ meet_in_middle(
 \item{df}{Dataframe}
 
 \item{exposure}{Name of the exposure of interest. Can be either continuous or
-dichotomous.}
+dichotomous. Currently, only a single exposure is supported.}
 
 \item{outcome}{Name of the outcome of interest. Can be either continuous or
 dichotomous. For dichotomous variables, must set \code{outcome_family} to
 "logistic", and values must be either 0/1 or a factor with the first level
-representing the reference group.}
+representing the reference group. Currently, only a single outcome is
+supported.}
 
 \item{omics}{Names of all omics features in the dataset}
 
@@ -58,7 +59,7 @@ threshold: Marginal significance, based on unadjusted p-values
 }
 \description{
 Implements a meet in the middle analysis for identifying omics associated
-with both exposures and outcomes, as described by
+with both exposures and outcomes, as described by Chadeau-Hyam et al., 2010.
 }
 \examples{
  # Simulate dataset
@@ -68,7 +69,7 @@ n_ids = 400
 # Simulate omics
 omics_df <- matrix(nrow = n_ids,
                    ncol = n_omic_ftrs)
-omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_omic_ftrs)})
+omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
 omics_df <- as.data.frame(omics_df)
 colnames(omics_df) <- paste0("feature_", colnames(omics_df))
 # Simulate covariates and outcomes
@@ -76,9 +77,12 @@ cov_out <- data.frame(id = c(1:n_ids),
                       sex = sample(c("male", "female"),
                                    n_ids, replace=TRUE,prob=c(.5,.5)),
                       age = rnorm(10, 10, 2),
-                      exposure = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                      disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
-                      weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
+                      weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2),
+                      exposure1 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      exposure2 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      exposure3 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      disease1 = sample(0:1, n_ids, replace=TRUE, prob=c(.9,.1)), 
+                      disease2 = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)))
 
 # Create Test Data
 test_data <- cbind(cov_out, omics_df)
@@ -89,15 +93,15 @@ colnames_omic_fts <- colnames(test_data)[grep("feature_",
 
 # Meet in the middle with a dichotomous outcome
 res <- meet_in_middle(df = test_data,
-                      exposure = "exposure", 
-                      outcome = "disease", 
+                      exposure = "exposure1", 
+                      outcome = "disease1", 
                       omics = colnames_omic_fts,
                       covars = c("age", "sex"), 
                       outcome_family = "binomial")
 
 # Meet in the middle with a continuous outcome 
 res <- meet_in_middle(df = test_data,
-                      exposure = "exposure", 
+                      exposure = "exposure1", 
                       outcome = "weight", 
                       omics = colnames_omic_fts,
                       covars = c("age", "sex"), 
@@ -105,7 +109,7 @@ res <- meet_in_middle(df = test_data,
 
 # Meet in the middle with a continuous outcome and no covariates
 res <- meet_in_middle(df = test_data,
-                      exposure = "exposure", 
+                      exposure = "exposure1", 
                       outcome = "weight", 
                       omics = colnames_omic_fts,
                       outcome_family = "gaussian")

@@ -37,7 +37,7 @@
 #' # Simulate omics
 #' omics_df <- matrix(nrow = n_ids, 
 #'                    ncol = n_omic_ftrs)
-#' omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_omic_ftrs)})
+#' omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
 #' omics_df <- as.data.frame(omics_df)
 #' colnames(omics_df) <- paste0("feature_", colnames(omics_df))
 #' # Simulate covariates and outcomes

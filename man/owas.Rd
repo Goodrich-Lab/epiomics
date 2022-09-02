@@ -18,11 +18,12 @@ owas(
 \arguments{
 \item{df}{Dataset}
 
-\item{var}{Name of the variable of interest- this is usually either an
-exposure variable or an outcome variable. Can be either continuous or
-dichotomous. For dichotomous variables, must set \code{family} to
-"binomial", and values must be either 0/1 or a factor with the first level
-representing the reference group.}
+\item{var}{Name of the variable or variables of interest- this is usually
+either an exposure variable or an outcome variable. Can be either
+continuous or dichotomous. For dichotomous variables, must set \code{family}
+to "binomial", and values must be either 0/1 or a factor with the first
+level representing the reference group. Can handle multiple variables, but
+they must all be of the same \code{family}.}
 
 \item{omics}{Names of all omics features in the dataset}
 
@@ -69,17 +70,20 @@ n_ids = 400
 # Simulate omics
 omics_df <- matrix(nrow = n_ids, 
                    ncol = n_omic_ftrs)
-omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_omic_ftrs)})
+omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
 omics_df <- as.data.frame(omics_df)
 colnames(omics_df) <- paste0("feature_", colnames(omics_df))
 # Simulate covariates and outcomes
-cov_out <- data.frame(id = c(1:n_ids), 
-                      sex = sample(c("male", "female"), 
+cov_out <- data.frame(id = c(1:n_ids),
+                      sex = sample(c("male", "female"),
                                    n_ids, replace=TRUE,prob=c(.5,.5)),
                       age = rnorm(10, 10, 2),
-                      exposure = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                      disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
-                      weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
+                      weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2),
+                      exposure1 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      exposure2 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      exposure3 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
+                      disease1 = sample(0:1, n_ids, replace=TRUE, prob=c(.9,.1)), 
+                      disease2 = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)))
 
 # Create Test Data
 test_data <- cbind(cov_out, omics_df)
@@ -88,18 +92,28 @@ test_data <- cbind(cov_out, omics_df)
 colnames_omic_fts <- colnames(test_data)[grep("feature_",
                                               colnames(test_data))]
 
-# Run function with continuous exposure as the variable of interest
+# Get names of exposures
+expnms = c("exposure1", "exposure2", "exposure3")
+
+# Run function with one continuous exposure as the variable of interest
 owas(df = test_data, 
-     var = "exposure", 
+     var = "exposure1", 
+     omics = colnames_omic_fts, 
+     covars = c("age", "sex"), 
+     var_exposure_or_outcome = "exposure", 
+     family = "gaussian")
+     
+# Run function with multiple continuous exposures as the variable of interest
+owas(df = test_data, 
+     var = expnms, 
      omics = colnames_omic_fts, 
      covars = c("age", "sex"), 
      var_exposure_or_outcome = "exposure", 
      family = "gaussian")
 
-
 # Run function with dichotomous outcome as the variable of interest
 owas(df = test_data, 
-     var = "disease", 
+     var = "disease1", 
      omics = colnames_omic_fts, 
      covars = c("age", "sex"), 
      var_exposure_or_outcome = "outcome", 
