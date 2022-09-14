@@ -62,7 +62,7 @@
 #'  exposure_names = c("exposure1", "exposure2", "exposure3")
 #' 
 #' # Run function without covariates
-#' out <- qgcomp_owas(df = test_data,
+#' out <- owas_qgcomp(df = test_data,
 #'                    expnms = exposure_names,
 #'                    omics = colnames_omic_fts,
 #'                    q = 4, 
@@ -70,7 +70,7 @@
 #' 
 #' 
 #' # Run analysis with covariates
-#' out <- qgcomp_owas(df = test_data,
+#' out <- owas_qgcomp(df = test_data,
 #'                    expnms = c("exposure1", "exposure2", "exposure3"),
 #'                    covars = c("weight", "age", "sex"),
 #'                    omics = colnames_omic_fts,
@@ -78,7 +78,7 @@
 #'                    confidence_level = 0.95) 
 #'  
 #' 
-qgcomp_owas <- compiler::cmpfun(
+owas_qgcomp <- compiler::cmpfun(
   function(df, 
            expnms,
            omics, 
