@@ -58,6 +58,8 @@ owas_mixed_effects <- compiler::cmpfun(
            confidence_level = 0.95, 
            conf_int = FALSE, 
            REML = TRUE){
+    final_col_names <- ftr_var_group <- NULL
+    
     
     alpha = 1-confidence_level
     
@@ -273,7 +275,7 @@ owas_mixed_effects <- compiler::cmpfun(
                                    "var_name")))
     
     # Select columns
-    reordered <- final_results_2[,..final_col_names] 
+    reordered <- final_results_2[, final_col_names, with = FALSE] 
     
     
     return(as.data.frame(reordered))

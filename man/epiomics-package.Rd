@@ -4,9 +4,9 @@
 \name{epiomics-package}
 \alias{epiomics}
 \alias{epiomics-package}
-\title{epiomics: Functions for analyzing 'omics data in observational studies}
+\title{epiomics: Functions for Analyzing 'Omics Data in Observational Studies}
 \description{
-epiomics provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.
+Provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.
 }
 \author{
 \strong{Maintainer}: Jesse Goodrich \email{jagoodri@usc.edu} (\href{https://orcid.org/0000-0001-6615-0472}{ORCID})

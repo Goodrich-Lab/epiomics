@@ -1,14 +1,14 @@
 Package: epiomics
-Title: Functions for analyzing 'omics data in observational studies
-Version: 0.0.0.9000
+Title: Functions for Analyzing 'Omics Data in Observational Studies
+Version: 0.0.1
 Authors@R: 
     person("Jesse", "Goodrich", , "jagoodri@usc.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6615-0472"))
-Description: epiomics provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.  
+Description: Provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.  
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Imports: 
     data.table,
     qgcomp,

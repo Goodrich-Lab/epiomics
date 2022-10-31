@@ -1,4 +1,9 @@
-# epiomics: Functions for omics data analysis in observational studies
+# epiomics: Functions for Analyzing 'Omics Data in Observational Studies
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/JAGoodrich/epiomics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/JAGoodrich/epiomics/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 
 **epiomics** provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.
 
@@ -137,3 +142,5 @@ res <- meet_in_middle(df = test_data,
                       outcome_family = "gaussian")
 res
 ```
+
+
