@@ -14,7 +14,8 @@ owas_mixed_effects(
   family = "gaussian",
   confidence_level = 0.95,
   conf_int = FALSE,
-  REML = TRUE
+  REML = TRUE,
+  ref_group = NULL
 )
 }
 \arguments{
@@ -50,6 +51,9 @@ calculates Wald confidence intervals via \code{confint.default}.}
 
 \item{REML}{logical scalar - Should the estimates be chosen to optimize
 the REML criterion (as opposed to the log-likelihood)? Defalt is TRUE}
+
+\item{ref_group}{Reference category if the variable of interest is a
+character or factor. If not, can leave empty.}
 }
 \value{
 A data frame with 6 columns:

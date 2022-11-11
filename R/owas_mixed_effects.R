@@ -35,6 +35,8 @@
 #' @param conf_int Should Confidence intervals be generated for the estimates? 
 #' Default is FALSE. Setting to TRUE will take longer. For logistic models, 
 #' calculates Wald confidence intervals via \code{confint.default}.
+#' @param ref_group Reference category if the variable of interest is a
+#' character or factor. If not, can leave empty.
 #' 
 #' @returns 
 #' A data frame with 6 columns:  
@@ -57,20 +59,42 @@ owas_mixed_effects <- compiler::cmpfun(
            family = "gaussian", 
            confidence_level = 0.95, 
            conf_int = FALSE, 
-           REML = TRUE){
+           REML = TRUE, 
+           ref_group = NULL){
+    df <- base::as.data.frame(df)
     final_col_names <- ftr_var_group <- NULL
-    
-    
     alpha = 1-confidence_level
     
     # Check for issues in data 
-    # Check if variable of interest is in data
+    # Check for issues in data ----
+    # Get var variable types
+    var_types <- df[,(colnames(df) %in% var)] |>
+      sapply(function(x)class(x)) |> unique()
+    
+    ## Check if variable of interest is in data ----
     if(FALSE %in% (var %in% colnames(df))){ 
       stop(paste0("Variable '", 
                   paste0(var[!(var %in% colnames(df))],
                          collapse = ", "),
                   "' not found in data. Check data.") ) 
     }    
+    ## Check if var has different types ----
+    if(length(var_types) > 1){ 
+      stop("All variables in \'var\' must be the same type")  
+    }   
+    ## Check if var is numeric or character/factor with max 2 levels ----
+    if((var_types == "character" | var_types == "factor") ){ 
+      if(is.null(ref_group)){ 
+        stop("If var is character or factor, ref_group must be specified")  
+      } 
+      if((df[,(colnames(df) %in% var)] |>
+          as.matrix() |>
+          as.character() |> 
+          unique() |>
+          length()) > 2){ 
+        stop("Currently var can only contain a maximum of two unique categories")  
+      }
+    }  
     # Check if all omics features are in the data
     if(FALSE %in% (omics %in% colnames(df))){ 
       stop("Not all omics variables are found in the data. Check omics column names.")  
@@ -113,6 +137,11 @@ owas_mixed_effects <- compiler::cmpfun(
     
     # Create feature_name_var_name variable
     dt_l2$ftr_var_group = paste0(dt_l2$feature_name, "_", dt_l2$var_name)
+    
+    # relevel var_value to specify correct reference group
+    if(var_types == "character" | var_types == "factor") { 
+      dt_l2$var_value = ifelse(dt_l2$var_value == ref_group, 0, 1)
+    }
     
     # Set formula for model ------------------
     # depending on whether variable of interest is the exposure or the outcome 

@@ -30,39 +30,18 @@
 #' threshold: Marginal significance, based on unadjusted p-values 
 #' 
 #' @examples 
-#' # Simulate dataset
-#' set.seed(4656)
-#' n_omic_ftrs = 100
-#' n_ids = 400
-#' # Simulate omics
-#' omics_df <- matrix(nrow = n_ids, 
-#'                    ncol = n_omic_ftrs)
-#' omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
-#' omics_df <- as.data.frame(omics_df)
-#' colnames(omics_df) <- paste0("feature_", colnames(omics_df))
-#' # Simulate covariates and outcomes
-#' cov_out <- data.frame(id = c(1:n_ids), 
-#'                       sex = sample(c("male", "female"), 
-#'                                   n_ids, replace=TRUE,prob=c(.5,.5)),
-#'                      age = rnorm(10, 10, 2),
-#'                      exposure1 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                      exposure2 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                      exposure3 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                      disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
-#'                      weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
-#' 
-#' # Create Test Data
-#' test_data <- cbind(cov_out, omics_df)
+#' # Load Example Data
+#' data("example_data")
 #' 
 #' # Get names of omics
-#' colnames_omic_fts <- colnames(test_data)[grep("feature_",
-#'                                               colnames(test_data))]
+#' colnames_omic_fts <- colnames(example_data)[grep("feature_",
+#'                                               colnames(example_data))]
 #' 
 #' # Names of exposures in mixture
 #'  exposure_names = c("exposure1", "exposure2", "exposure3")
 #' 
 #' # Run function without covariates
-#' out <- owas_qgcomp(df = test_data,
+#' out <- owas_qgcomp(df = example_data,
 #'                    expnms = exposure_names,
 #'                    omics = colnames_omic_fts,
 #'                    q = 4, 
@@ -70,7 +49,7 @@
 #' 
 #' 
 #' # Run analysis with covariates
-#' out <- owas_qgcomp(df = test_data,
+#' out <- owas_qgcomp(df = example_data,
 #'                    expnms = c("exposure1", "exposure2", "exposure3"),
 #'                    covars = c("weight", "age", "sex"),
 #'                    omics = colnames_omic_fts,
@@ -87,12 +66,25 @@ owas_qgcomp <- compiler::cmpfun(
            confidence_level = 0.95){
     
     alpha = 1-confidence_level
+    # Get var variable types
+    var_types <- df[,(colnames(df) %in% expnms)] |>
+      sapply(function(x)class(x)) |> unique()
     
-    # Check for issues in data 
-    # Check if variable of interest is in data
+    ## Check if variable of interest is in data ----
     if(FALSE %in% (expnms %in% colnames(df))){ 
-      stop(paste0("Not all exposure variables are found in the data. Check data.") ) 
+      stop(paste0("Variable '", 
+                  paste0(expnms[!(expnms %in% colnames(df))],
+                         collapse = ", "),
+                  "' not found in data. Check data.") ) 
     }    
+    ## Check if var has different types ----
+    if(length(var_types) > 1){ 
+      stop("All variables in \'expnms\' must be the same type")  
+    }   
+    ## Check if var is numeric or character/factor with max 2 levels ----
+    if((var_types == "character" | var_types == "factor")){ 
+      stop("Currently exposures must be of type numeric")  
+    }
     # Check if all omics features are in the data
     if(FALSE %in% (omics %in% colnames(df))){ 
       stop("Not all omics variables are found in the data. Check omics column names.")  
@@ -120,21 +112,21 @@ owas_qgcomp <- compiler::cmpfun(
     dt_list <- split(dt_l, f = dt_l$feature_name)
     # Apply qgcomp function
     
-      res <- lapply(dt_list, 
-                    FUN = function(x){ 
-                      dt_l <- x[,c(colnames(x) %in% c(expnms, "feature_value", covars)),
-                                with = FALSE]
-                      fit <- qgcomp::qgcomp(feature_value~.,
-                                            expnms = expnms, 
-                                            q = q,
-                                            alpha = 0.05,
-                                            data = dt_l)
-                      c(psi = fit$coef[2],
-                                  # se = fit$
-                                  lcl_psi = fit$ci[1],
-                                  ucl_psi = fit$ci[2],
-                                  p_value = fit$pval[2])
-                    })
+    res <- lapply(dt_list, 
+                  FUN = function(x){ 
+                    dt_l <- x[,c(colnames(x) %in% c(expnms, "feature_value", covars)),
+                              with = FALSE]
+                    fit <- qgcomp::qgcomp(feature_value~.,
+                                          expnms = expnms, 
+                                          q = q,
+                                          alpha = 0.05,
+                                          data = dt_l)
+                    c(psi = fit$coef[2],
+                      # se = fit$
+                      lcl_psi = fit$ci[1],
+                      ucl_psi = fit$ci[2],
+                      p_value = fit$pval[2])
+                  })
     
     
     # Add column for estimate 

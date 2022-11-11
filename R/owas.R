@@ -29,6 +29,8 @@
 #' @param conf_int Should Confidence intervals be generated for the estimates? 
 #' Default is FALSE. Setting to TRUE will take longer. For logistic models, 
 #' calculates Wald confidence intervals via \code{confint.default}.
+#' @param ref_group Reference category if the variable of interest is a
+#' character or factor. If not, can leave empty. 
 #' 
 #' @returns 
 #' A data frame with 6 columns:  
@@ -42,40 +44,18 @@
 #' threshold: Marginal significance, based on unadjusted p-values 
 #' 
 #' @examples 
-#' # Simulate dataset
-#' set.seed(4656)
-#' n_omic_ftrs = 100
-#' n_ids = 400
-#' # Simulate omics
-#' omics_df <- matrix(nrow = n_ids, 
-#'                    ncol = n_omic_ftrs)
-#' omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
-#' omics_df <- as.data.frame(omics_df)
-#' colnames(omics_df) <- paste0("feature_", colnames(omics_df))
-#' # Simulate covariates and outcomes
-#' cov_out <- data.frame(id = c(1:n_ids),
-#'                       sex = sample(c("male", "female"),
-#'                                    n_ids, replace=TRUE,prob=c(.5,.5)),
-#'                       age = rnorm(10, 10, 2),
-#'                       weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2),
-#'                       exposure1 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                       exposure2 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                       exposure3 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-#'                       disease1 = sample(0:1, n_ids, replace=TRUE, prob=c(.9,.1)), 
-#'                       disease2 = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)))
-#' 
-#' # Create Test Data
-#' test_data <- cbind(cov_out, omics_df)
+#' # Load Example Data
+#' data("example_data")
 #' 
 #' # Get names of omics
-#' colnames_omic_fts <- colnames(test_data)[grep("feature_",
-#'                                               colnames(test_data))]
+#' colnames_omic_fts <- colnames(example_data)[grep("feature_",
+#'                                               colnames(example_data))]
 #' 
 #' # Get names of exposures
 #' expnms = c("exposure1", "exposure2", "exposure3")
 #' 
 #' # Run function with one continuous exposure as the variable of interest
-#' owas(df = test_data, 
+#' owas(df = example_data, 
 #'      var = "exposure1", 
 #'      omics = colnames_omic_fts, 
 #'      covars = c("age", "sex"), 
@@ -83,7 +63,7 @@
 #'      family = "gaussian")
 #'      
 #' # Run function with multiple continuous exposures as the variable of interest
-#' owas(df = test_data, 
+#' owas(df = example_data, 
 #'      var = expnms, 
 #'      omics = colnames_omic_fts, 
 #'      covars = c("age", "sex"), 
@@ -91,13 +71,12 @@
 #'      family = "gaussian")
 #' 
 #' # Run function with dichotomous outcome as the variable of interest
-#' owas(df = test_data, 
+#' owas(df = example_data, 
 #'      var = "disease1", 
 #'      omics = colnames_omic_fts, 
 #'      covars = c("age", "sex"), 
 #'      var_exposure_or_outcome = "outcome", 
 #'      family = "binomial")
-#'  
 #' 
 owas <- compiler::cmpfun(
   function(df, 
@@ -107,20 +86,40 @@ owas <- compiler::cmpfun(
            var_exposure_or_outcome, 
            family = "gaussian", 
            confidence_level = 0.95, 
-           conf_int = FALSE){
-    
+           conf_int = FALSE, 
+           ref_group = NULL){
+    df <- base::as.data.frame(df)
     final_col_names <- ftr_var_group <- NULL
-    
     alpha = 1-confidence_level
+    # Check for issues in data ----
+    # Get var variable types
+    var_types <- df[,(colnames(df) %in% var)] |>
+      sapply(function(x)class(x)) |> unique()
     
-    # Check for issues in data 
-    # Check if variable of interest is in data
+    ## Check if variable of interest is in data ----
     if(FALSE %in% (var %in% colnames(df))){ 
       stop(paste0("Variable '", 
                   paste0(var[!(var %in% colnames(df))],
                          collapse = ", "),
                   "' not found in data. Check data.") ) 
     }    
+    ## Check if var has different types ----
+    if(length(var_types) > 1){ 
+      stop("All variables in \'var\' must be the same type")  
+    }   
+    ## Check if var is numeric or character/factor with max 2 levels ----
+    if((var_types == "character" | var_types == "factor") ){ 
+      if(is.null(ref_group)){ 
+        stop("If var is character or factor, ref_group must be specified")  
+      } 
+      if((df[,(colnames(df) %in% var)] |>
+           as.matrix() |>
+           as.character() |> 
+           unique() |>
+           length()) > 2){ 
+        stop("Currently var can only contain a maximum of two unique categories")  
+      }
+    }  
     # Check if all omics features are in the data
     if(FALSE %in% (omics %in% colnames(df))){ 
       stop("Not all omics variables are found in the data. Check omics column names.")  
@@ -153,6 +152,11 @@ owas <- compiler::cmpfun(
     
     # Create feature_name_var_name variable
     dt_l2$ftr_var_group = paste0(dt_l2$feature_name, "_", dt_l2$var_name)
+    
+    # relevel var_value to specify correct reference group
+    if(var_types == "character" | var_types == "factor") { 
+      dt_l2$var_value = ifelse(dt_l2$var_value == ref_group, 0, 1)
+    }
     
     # Set formula for model ------------------
     # depending on whether variable of interest is the exposure or the outcome 

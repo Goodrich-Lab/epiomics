@@ -40,39 +40,18 @@ continuous or dichotomous outcomes, and provides the option to adjust for
 covariates.
 }
 \examples{
-# Simulate dataset
-set.seed(4656)
-n_omic_ftrs = 100
-n_ids = 400
-# Simulate omics
-omics_df <- matrix(nrow = n_ids, 
-                   ncol = n_omic_ftrs)
-omics_df <- apply(omics_df, MARGIN = 2, FUN = function(x){rnorm(n_ids)})
-omics_df <- as.data.frame(omics_df)
-colnames(omics_df) <- paste0("feature_", colnames(omics_df))
-# Simulate covariates and outcomes
-cov_out <- data.frame(id = c(1:n_ids), 
-                      sex = sample(c("male", "female"), 
-                                  n_ids, replace=TRUE,prob=c(.5,.5)),
-                     age = rnorm(10, 10, 2),
-                     exposure1 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                     exposure2 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                     exposure3 = rlnorm(n_ids, meanlog = 2.3, sdlog = 1),
-                     disease = sample(0:1, n_ids, replace=TRUE,prob=c(.9,.1)),
-                     weight =  rlnorm(n_ids, meanlog = 3, sdlog = 0.2))
-
-# Create Test Data
-test_data <- cbind(cov_out, omics_df)
+# Load Example Data
+data("example_data")
 
 # Get names of omics
-colnames_omic_fts <- colnames(test_data)[grep("feature_",
-                                              colnames(test_data))]
+colnames_omic_fts <- colnames(example_data)[grep("feature_",
+                                              colnames(example_data))]
 
 # Names of exposures in mixture
  exposure_names = c("exposure1", "exposure2", "exposure3")
 
 # Run function without covariates
-out <- owas_qgcomp(df = test_data,
+out <- owas_qgcomp(df = example_data,
                    expnms = exposure_names,
                    omics = colnames_omic_fts,
                    q = 4, 
@@ -80,7 +59,7 @@ out <- owas_qgcomp(df = test_data,
 
 
 # Run analysis with covariates
-out <- owas_qgcomp(df = test_data,
+out <- owas_qgcomp(df = example_data,
                    expnms = c("exposure1", "exposure2", "exposure3"),
                    covars = c("weight", "age", "sex"),
                    omics = colnames_omic_fts,
