@@ -12,7 +12,9 @@ meet_in_middle(
   covars = NULL,
   outcome_family = "gaussian",
   confidence_level = 0.95,
-  conf_int = FALSE
+  conf_int = FALSE,
+  ref_group_exposure = NULL,
+  ref_group_outcome = NULL
 )
 }
 \arguments{
@@ -40,6 +42,12 @@ logistic (via glm)}
 \item{conf_int}{Should Confidence intervals be generated for the estimates?
 Default is FALSE. Setting to TRUE will take longer. For logistic models,
 calculates Wald confidence intervals via \code{confint.default}.}
+
+\item{ref_group_exposure}{Reference category if the exposure is a
+character or factor. If not, can leave empty.}
+
+\item{ref_group_outcome}{Reference category if the outcome is a
+character or factor.  If not, can leave empty.}
 }
 \value{
 A list of three dataframes, containing:

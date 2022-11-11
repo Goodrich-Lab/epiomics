@@ -114,40 +114,55 @@ owas_qgcomp <- compiler::cmpfun(
     
     res <- lapply(dt_list, 
                   FUN = function(x){ 
-                    dt_l <- x[,c(colnames(x) %in% c(expnms, "feature_value", covars)),
+                    dt_l <- x[,c(colnames(x) %in% 
+                                   c(expnms, "feature_value", covars)),
                               with = FALSE]
                     fit <- qgcomp::qgcomp(feature_value~.,
                                           expnms = expnms, 
                                           q = q,
                                           alpha = 0.05,
                                           data = dt_l)
+                    names(fit$fit$coefficients) <-  paste0("coef_", 
+                                                           names(fit$fit$coefficients))
+                    
                     c(psi = fit$coef[2],
-                      # se = fit$
                       lcl_psi = fit$ci[1],
                       ucl_psi = fit$ci[2],
-                      p_value = fit$pval[2])
+                      p_value = fit$pval[2], 
+                      fit$fit$coefficients[-1])
+                    
                   })
     
-    
-    # Add column for estimate 
-    res_2 <- t(as.data.frame(res)) 
+    # Add column for estimate
+    res_2 <- t(as.data.frame(res))
     res_2 <- as.data.frame(res_2)
-    res_2$feature <- rownames(res_2)
     rownames(res_2) <- NULL
     
-    # Reorder (select feature then all other cols)
-    final_results <- res_2[colnames(res_2)[c(5, 1:4)]]
-    
-    # Add column for estimate 
-    colnames(final_results) <- c("feature", "psi", #"se",
-                                 "lcl_psi", "ucl_psi", "p_value") 
-    
     # Calculate adjusted p value
-    final_results$adjusted_pval = p.adjust(final_results$p_value, method = "fdr")
+    res_2$adjusted_pval = p.adjust(res_2$p_value, method = "fdr")
     
-    final_results$threshold = ifelse(final_results$adjusted_pval < alpha, 
-                                     "Significant",
-                                     "Non-significant")
+    res_2$threshold = ifelse(res_2$adjusted_pval < alpha,
+                             "Significant",
+                             "Non-significant")
+    res_2$feature <- rownames(res_2)
+    
+    # Reorder (select feature then all other cols)
+    final_results <- res_2[
+      c("feature", "psi.psi1", 
+      "lcl_psi", "ucl_psi", "p_value",
+      "adjusted_pval", "threshold", 
+      paste0("coef_", expnms))
+    ]
+
+    # Rename psi
+    colnames(final_results)[2] <-"psi"
+    
+    # Add column for covariates
+    if(is.null(covars)){
+      final_results$covariates <- "None"
+    } else {
+      final_results$covariates <- paste0(covars, collapse = ", ")
+    }
     
     return(final_results)
     

@@ -22,6 +22,10 @@
 #' @param conf_int Should Confidence intervals be generated for the estimates? 
 #' Default is FALSE. Setting to TRUE will take longer. For logistic models, 
 #' calculates Wald confidence intervals via \code{confint.default}.
+#' @param ref_group_exposure Reference category if the exposure is a
+#' character or factor. If not, can leave empty. 
+#' @param ref_group_outcome Reference category if the outcome is a
+#' character or factor.  If not, can leave empty. 
 #' 
 #' @returns 
 #' A list of three dataframes, containing: 
@@ -76,7 +80,9 @@ meet_in_middle <- compiler::cmpfun(
            covars = NULL,
            outcome_family = "gaussian",
            confidence_level = 0.95, 
-           conf_int = FALSE){
+           conf_int = FALSE, 
+           ref_group_exposure = NULL, 
+           ref_group_outcome = NULL){
     alpha = 1-confidence_level
     
     # Check if more than one exposure
@@ -94,7 +100,8 @@ meet_in_middle <- compiler::cmpfun(
                                           var_exposure_or_outcome = "exposure", 
                                           family = "gaussian",
                                           confidence_level = confidence_level, 
-                                          conf_int = conf_int)
+                                          conf_int = conf_int, 
+                                          ref_group = ref_group_exposure)
     
     # omics_outcome_owas
     omics_outcome_owas <- epiomics::owas(df = df,
@@ -104,7 +111,8 @@ meet_in_middle <- compiler::cmpfun(
                                          var_exposure_or_outcome = "outcome", 
                                          family = outcome_family,
                                          confidence_level = confidence_level, 
-                                         conf_int = conf_int)
+                                         conf_int = conf_int, 
+                                         ref_group = ref_group_outcome)
     
     
     # Find overlap
