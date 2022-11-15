@@ -20,8 +20,8 @@ meet_in_middle(
 \arguments{
 \item{df}{Dataframe}
 
-\item{exposure}{Name of the exposure of interest. Can be either continuous or
-dichotomous. Currently, only a single exposure is supported.}
+\item{exposure}{Name of the exposure of interest. Can be either continuous
+or dichotomous. Currently, only a single exposure is supported.}
 
 \item{outcome}{Name of the outcome of interest. Can be either continuous or
 dichotomous. For dichotomous variables, must set \code{outcome_family} to
@@ -33,8 +33,8 @@ supported.}
 
 \item{covars}{Names of covariates (can be NULL)}
 
-\item{outcome_family}{"gaussian" for linear models (via lm) or "binomial" for
-logistic (via glm)}
+\item{outcome_family}{"gaussian" for linear models (via lm) or "binomial"
+for logistic (via glm)}
 
 \item{confidence_level}{Confidence level for marginal significance
 (defaults to 0.95)}
@@ -55,7 +55,8 @@ A list of three dataframes, containing:
 \item Results from the Exposure-Omics Wide Association Study
 \item Results from the Omics-Outcome Wide Association Study
 \item Overlapping significant features from 1 and 2.
-For each omics wide association, results are provided in a data frame with 6 columns:
+For each omics wide association, results are provided in a data frame with 6
+columns:
 feature_name: name of the omics feature
 estimate: the model estimate for the feature. For linear models, this is the
 beta: for logistic models, this is the log odds.

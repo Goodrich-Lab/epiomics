@@ -17,7 +17,11 @@ dichotomous. For dichotomous variables, must set \code{q} to
 
 \item{covars}{Names of covariates (can be NULL)}
 
-\item{q}{NULL or number of quantiles used to create quantile indicator variables representing the exposure variables. Defaults to 4If NULL, then gcomp proceeds with un-transformed version of exposures in the input datasets (useful if data are already transformed, or for performing standard g-computation).}
+\item{q}{NULL or number of quantiles used to create quantile indicator
+variables representing the exposure variables. Defaults to 4If NULL, then
+qgcomp proceeds with un-transformed version of exposures in the input
+datasets (useful if data are already transformed, or for performing standard
+g-computation).}
 
 \item{confidence_level}{Confidence level for marginal significance
 (defaults to 0.95, or an alpha of 0.05)}
@@ -33,9 +37,9 @@ adjusted_pval: FDR adjusted p-value
 threshold: Marginal significance, based on unadjusted p-values
 }
 \description{
-Implements an omics wide association study using QGComp to model associations of
-exposure mixtures with each individual 'omics feature as an outcome
-'omics data as either the dependent variable. Allows for either
+Implements an omics wide association study using QGComp to model
+associations of exposure mixtures with each individual 'omics feature as an
+outcome 'omics data as either the dependent variable. Allows for either
 continuous or dichotomous outcomes, and provides the option to adjust for
 covariates.
 }

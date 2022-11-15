@@ -2,7 +2,8 @@
 % Please edit documentation in R/owas_mixed_effects.R
 \name{owas_mixed_effects}
 \alias{owas_mixed_effects}
-\title{Perform 'omics wide association study with linear or generalized mixed models}
+\title{Perform 'omics wide association study with linear or generalized mixed
+models}
 \usage{
 owas_mixed_effects(
   df,
@@ -69,8 +70,8 @@ threshold: Marginal significance, based on unadjusted p-values
 \description{
 Implements an omics wide association study with the option of using the
 'omics data as either the dependent variable (i.e., for performing an
-exposure --> 'omics analysis) or using the 'omics as the independent variable
-(i.e., for performing an 'omics --> outcome analysis). Allows for either
-continuous or dichotomous outcomes, and provides the option to adjust for
-covariates.
+exposure --> 'omics analysis) or using the 'omics as the independent
+variable (i.e., for performing an 'omics --> outcome analysis). Allows for
+either continuous or dichotomous outcomes, and provides the option to
+adjust for covariates.
 }

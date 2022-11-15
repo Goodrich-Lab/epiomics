@@ -5,11 +5,12 @@ test_that("owas works with multiple traits", {
   data("example_data")
   
   # Get names of omics
-  colnames_omic_fts <- colnames(example_data)[grep("feature_",
-                                                   colnames(example_data))]
+  colnames_omic_fts <- colnames(example_data)[
+    grep("feature_",
+         colnames(example_data))][1:5]
   
   # Run function with multiple exposures as the variable of interest
-  expnms = c("exposure1", "exposure2", "exposure3")
+  expnms <- c("exposure1", "exposure2", "exposure3")
   
   # Continuous exposure, covars
   cont_owas_out <- owas(
@@ -19,7 +20,6 @@ test_that("owas works with multiple traits", {
     covars = c("age", "sex"),
     var_exposure_or_outcome = "exposure",
     family = "gaussian")
-  
   
   # Test that function returns expected dimensions
   testthat::expect_equal(object = ncol(cont_owas_out), 
@@ -51,9 +51,7 @@ test_that("owas works with multiple traits", {
        var_exposure_or_outcome = "outcome",
        family = "gaussian")
   
-  
 })
-
 
 # Test that owas works with single outcome ----------------
 test_that("owas works with single continuous outcome", {
@@ -61,8 +59,9 @@ test_that("owas works with single continuous outcome", {
   data("example_data")
   
   # Get names of omics
-  colnames_omic_fts <- colnames(example_data)[grep("feature_",
-                                                   colnames(example_data))]
+  colnames_omic_fts <- colnames(example_data)[
+    grep("feature_",
+         colnames(example_data))][1:5]
   
   # Run function with continuous exposure as the variable of interest
   cont_owas_out <- owas(df = example_data,
@@ -76,15 +75,26 @@ test_that("owas works with single continuous outcome", {
   testthat::expect_equal(object = ncol(cont_owas_out), 
                          expected = 8)
   testthat::expect_equal(object = nrow(cont_owas_out), 
-                         expected = 100)
+                         expected = 5)
   
   # Run function with dichotomous outcome as the variable of interest
-  # owas(df = example_data,
-  #                var = "disease1",
-  #                omics = colnames_omic_fts,
-  #                covars = c("age", "sex"),
-  #                var_exposure_or_outcome = "outcome",
-  #                family = "binomial")
+  owas(df = example_data,
+       var = "disease1",
+       omics = colnames_omic_fts,
+       covars = c("age", "sex"),
+       var_exposure_or_outcome = "outcome",
+       family = "binomial")
+  
+  # Run function with dichotomous exposure as the variable of interest
+  owas(df = example_data,
+       var = "exposure4",
+       omics = colnames_omic_fts,
+       covars = c("age", "sex"),
+       var_exposure_or_outcome = "outcome",
+       ref_group = c("low"),
+       family = "binomial") 
+  
+  
 })
 
 
@@ -95,11 +105,12 @@ test_that("owas gives correct errors", {
   data("example_data")
   
   # Get names of omics
-  colnames_omic_fts <- colnames(example_data)[grep("feature_",
-                                                   colnames(example_data))]
+  colnames_omic_fts <- colnames(example_data)[
+    grep("feature_",
+         colnames(example_data))][1:5]
   
   # Run function with multiple exposures as the variable of interest
-  disease_names = c("diseasecat1", "diseasecat2", "diseasecat3") 
+  disease_names <- c("diseasecat1", "diseasecat2", "diseasecat3") 
   
   ## Error that ref_group must be specified ----
   error_message <- testthat::capture_error(
@@ -112,14 +123,16 @@ test_that("owas gives correct errors", {
   )
   
   # Test that function returns expected dimensions
-  testthat::expect_equal(object = error_message$message, 
-                         expected = 'If var is character or factor, ref_group must be specified')
+  testthat::expect_equal(
+    object = error_message$message, 
+    expected = 
+      'If var is character or factor, ref_group must be specified')
   
   
-  # Erro: two categories
+  # Error: two categories
   error_message <- testthat::capture_error(
     cont_owas_out <- owas(df = example_data,
-                          var = disease_names,
+                          var = c(disease_names),
                           omics = colnames_omic_fts,
                           covars = c("age", "sex"),
                           var_exposure_or_outcome = "exposure",
@@ -128,23 +141,79 @@ test_that("owas gives correct errors", {
   )
   
   # Test that function returns expected dimensions
-  testthat::expect_equal(object = error_message$message, 
-                         expected = 'Currently var can only contain a maximum of two unique categories')
+  testthat::expect_equal(
+    object = error_message$message, 
+    expected = 'Var can only contain a maximum of two unique categories')
   
   # Error: same type
   error_message <- testthat::capture_error(
-    cont_owas_out <- owas(df = example_data,
-                          var = c(disease_names, "disease1"),
-                          omics = colnames_omic_fts,
-                          covars = c("age", "sex"),
-                          var_exposure_or_outcome = "exposure",
-                          family = "gaussian", 
-                          ref_group = "healthy")
+    owas(df = example_data,
+         var = c(disease_names, "disease1"),
+         omics = colnames_omic_fts,
+         covars = c("age", "sex"),
+         var_exposure_or_outcome = "exposure",
+         family = "gaussian", 
+         ref_group = "healthy")
   )
   
-  # Test that function returns expected dimensions
-  testthat::expect_equal(object = error_message$message, 
-                         expected = 'All variables in \'var\' must be the same type')
+  # Test that function returns correct error
+  testthat::expect_equal(
+    object = error_message$message, 
+    expected = 'All variables in \'var\' must be the same type')
+  
+  ## Var not found in data  ----
+  error_message <- testthat::capture_error(
+    owas(df = example_data,
+         var = c(disease_names, "test"),
+         omics = colnames_omic_fts,
+         covars = c("age", "sex"),
+         var_exposure_or_outcome = "exposure",
+         family = "gaussian", 
+         ref_group = "healthy")
+  )
+  
+  # Test error in data
+  testthat::expect_equal(
+    object = error_message$message, 
+    expected = 'Variable \'test\' not found in data. Check data.')
+  
+  
+  
+  ## Not all omics variables are found in the data ----
+  error_message <- testthat::capture_error(
+    owas(df = example_data,
+         var = c(disease_names[1:2]),
+         omics = c(colnames_omic_fts, "test"),
+         covars = c("age", "sex"),
+         var_exposure_or_outcome = "exposure",
+         family = "gaussian", 
+         ref_group = "healthy")
+  )
+  
+  # Test error in data
+  testthat::expect_equal(
+    object = error_message$message, 
+    expected = 
+      "Not all omics vars are found in the data. Check omics column names."
+  )
+  
+  ## Not all covars  are found in the data ----
+  error_message <- testthat::capture_error(
+    owas(df = example_data,
+         var = c(disease_names[1:2]),
+         omics = c(colnames_omic_fts),
+         covars = c("age", "test"),
+         var_exposure_or_outcome = "exposure",
+         family = "gaussian", 
+         ref_group = "healthy")
+  )
+  
+  # Test error in data
+  testthat::expect_equal(
+    object = error_message$message, 
+    expected = 
+      "Not all covars are found in the data. Check covar column names."
+  ) 
   
   
   

@@ -1,8 +1,8 @@
 #' Perform 'omics wide association study using qgcomp
 #' @description 
-#' Implements an omics wide association study using QGComp to model associations of 
-#' exposure mixtures with each individual 'omics feature as an outcome
-#' 'omics data as either the dependent variable. Allows for either 
+#' Implements an omics wide association study using QGComp to model 
+#' associations of exposure mixtures with each individual 'omics feature as an
+#' outcome 'omics data as either the dependent variable. Allows for either 
 #' continuous or dichotomous outcomes, and provides the option to adjust for 
 #' covariates. 
 #' 
@@ -15,7 +15,11 @@
 #'  "NULL", and values must be either 0/1.
 #' @param omics Names of all omics features in the dataset 
 #' @param covars Names of covariates (can be NULL)
-#' @param q NULL or number of quantiles used to create quantile indicator variables representing the exposure variables. Defaults to 4If NULL, then gcomp proceeds with un-transformed version of exposures in the input datasets (useful if data are already transformed, or for performing standard g-computation). 
+#' @param q NULL or number of quantiles used to create quantile indicator
+#' variables representing the exposure variables. Defaults to 4If NULL, then
+#' qgcomp proceeds with un-transformed version of exposures in the input 
+#' datasets (useful if data are already transformed, or for performing standard
+#' g-computation). 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95, or an alpha of 0.05)
 #' 
@@ -65,10 +69,10 @@ owas_qgcomp <- compiler::cmpfun(
            q = 4, 
            confidence_level = 0.95){
     
-    alpha = 1-confidence_level
+    alpha <- 1-confidence_level
     # Get var variable types
     var_types <- df[,(colnames(df) %in% expnms)] |>
-      sapply(function(x)class(x)) |> unique()
+      lapply(function(x)class(x)) |> unlist() |> unique()
     
     ## Check if variable of interest is in data ----
     if(FALSE %in% (expnms %in% colnames(df))){ 
@@ -83,15 +87,18 @@ owas_qgcomp <- compiler::cmpfun(
     }   
     ## Check if var is numeric or character/factor with max 2 levels ----
     if((var_types == "character" | var_types == "factor")){ 
-      stop("Currently exposures must be of type numeric")  
+      stop("Currently exposures must be numeric, consider reformatting")  
     }
     # Check if all omics features are in the data
     if(FALSE %in% (omics %in% colnames(df))){ 
-      stop("Not all omics variables are found in the data. Check omics column names.")  
+      stop(
+        "Not all omics vars are found in the data. Check omics column names.")  
     }    
     # Check if covars are in data
     if(FALSE %in% (covars %in% colnames(df))){ 
-      stop("Not all covariates are found in the data. Check covariate column names.") 
+      stop(
+        "Not all covars are found in the data. Check covar column names."
+        ) 
     }    
     
     
@@ -99,7 +106,7 @@ owas_qgcomp <- compiler::cmpfun(
     df <- data.table(df)
     
     # Pivot longer  
-    dt_l = melt.data.table(
+    dt_l <- melt.data.table(
       df,
       id.vars = c(expnms, covars),
       measure.vars = omics,
@@ -122,8 +129,9 @@ owas_qgcomp <- compiler::cmpfun(
                                           q = q,
                                           alpha = 0.05,
                                           data = dt_l)
-                    names(fit$fit$coefficients) <-  paste0("coef_", 
-                                                           names(fit$fit$coefficients))
+                    names(fit$fit$coefficients) <-  paste0(
+                      "coef_", 
+                      names(fit$fit$coefficients))
                     
                     c(psi = fit$coef[2],
                       lcl_psi = fit$ci[1],
@@ -139,21 +147,21 @@ owas_qgcomp <- compiler::cmpfun(
     rownames(res_2) <- NULL
     
     # Calculate adjusted p value
-    res_2$adjusted_pval = p.adjust(res_2$p_value, method = "fdr")
+    res_2$adjusted_pval <- p.adjust(res_2$p_value, method = "fdr")
     
-    res_2$threshold = ifelse(res_2$adjusted_pval < alpha,
-                             "Significant",
-                             "Non-significant")
+    res_2$threshold <- ifelse(res_2$adjusted_pval < alpha,
+                              "Significant",
+                              "Non-significant")
     res_2$feature <- rownames(res_2)
     
     # Reorder (select feature then all other cols)
     final_results <- res_2[
       c("feature", "psi.psi1", 
-      "lcl_psi", "ucl_psi", "p_value",
-      "adjusted_pval", "threshold", 
-      paste0("coef_", expnms))
+        "lcl_psi", "ucl_psi", "p_value",
+        "adjusted_pval", "threshold", 
+        paste0("coef_", expnms))
     ]
-
+    
     # Rename psi
     colnames(final_results)[2] <-"psi"
     

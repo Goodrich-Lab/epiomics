@@ -46,7 +46,7 @@ owas_clogit <- compiler::cmpfun(
            conf_int = FALSE, 
            method = "efron"){
     
-    alpha = 1-confidence_level
+    alpha <- 1-confidence_level
     
     # Check for issues in data 
     # Check if variable of interest is in data
@@ -58,11 +58,15 @@ owas_clogit <- compiler::cmpfun(
     }    
     # Check if all omics features are in the data
     if(FALSE %in% (omics %in% colnames(df))){ 
-      stop("Not all omics variables are found in the data. Check omics column names.")  
+      stop(
+        "Not all omics vars are found in the data. Check omics column names."
+        ) 
     }    
     # Check if covars are in data
     if(FALSE %in% (covars %in% colnames(df))){ 
-      stop("Not all covariates are found in the data. Check covariate column names.") 
+      stop(
+        "Not all covars are found in the data. Check covar column names."
+      )  
     }    
     
 
@@ -107,12 +111,12 @@ owas_clogit <- compiler::cmpfun(
       res_out <- data.frame(feature_name = omics, 
                             estimate = vector("numeric", length(omics)), 
                             se_est = vector("numeric", length(omics)), 
-                            test_statistic = vector("numeric", length(omics)) , 
+                            test_statistic = vector("numeric", length(omics)), 
                             p_value = vector("numeric", length(omics)), 
                             formula = mod_formula_df$formula) 
       
       # Run for loop to get results
-      for(i in 1:length(omics)){ 
+      for(i in seq_along(omics)){ 
         mod_formula <- as.formula(res_out$formula[i])
         fit <- clogit(mod_formula, data = df, method = method) |>
           summary() |> 
@@ -127,14 +131,14 @@ owas_clogit <- compiler::cmpfun(
       res_out <- data.frame(feature_name = omics, 
                             estimate = vector("numeric", length(omics)), 
                             se_est = vector("numeric", length(omics)), 
-                            test_statistic = vector("numeric", length(omics)) , 
+                            test_statistic = vector("numeric", length(omics)), 
                             p_value = vector("numeric", length(omics)), 
                             conf_low = vector("numeric", length(omics)), 
                             conf_high = vector("numeric", length(omics)),
                             formula = mod_formula_df$formula) 
       
       # Run for loop to get results
-      for(i in 1:length(omics)){ 
+      for(i in seq_along(omics)){ 
         mod_formula <- as.formula(res_out$formula[i])
         fit <- clogit(mod_formula, data = df, method = method)
         mod_coef <- fit |> summary() |> coef()
@@ -148,10 +152,10 @@ owas_clogit <- compiler::cmpfun(
     
     # Separate ftr_var_group back to ftr name and var name ------------
     # Calculate adjusted p value
-    res_out$adjusted_pval = p.adjust(res_out$p_value,
+    res_out$adjusted_pval <- p.adjust(res_out$p_value,
                                              method = "fdr")
     
-    res_out$threshold = ifelse(res_out$p_value < alpha,
+    res_out$threshold <- ifelse(res_out$p_value < alpha,
                                        "Significant",
                                        "Non-significant")
     

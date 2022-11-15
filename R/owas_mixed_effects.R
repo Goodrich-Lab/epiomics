@@ -1,11 +1,12 @@
-#' Perform 'omics wide association study with linear or generalized mixed models
+#' Perform 'omics wide association study with linear or generalized mixed 
+#' models
 #' @description 
 #' Implements an omics wide association study with the option of using the 
 #' 'omics data as either the dependent variable (i.e., for performing an 
-#' exposure --> 'omics analysis) or using the 'omics as the independent variable 
-#' (i.e., for performing an 'omics --> outcome analysis). Allows for either 
-#' continuous or dichotomous outcomes, and provides the option to adjust for 
-#' covariates. 
+#' exposure --> 'omics analysis) or using the 'omics as the independent 
+#' variable (i.e., for performing an 'omics --> outcome analysis). Allows for
+#' either continuous or dichotomous outcomes, and provides the option to 
+#' adjust for covariates. 
 #' 
 #' @import data.table 
 #' @importFrom stats binomial coef glm lm p.adjust confint 
@@ -63,13 +64,13 @@ owas_mixed_effects <- compiler::cmpfun(
            ref_group = NULL){
     df <- base::as.data.frame(df)
     final_col_names <- ftr_var_group <- NULL
-    alpha = 1-confidence_level
+    alpha <- 1-confidence_level
     
     # Check for issues in data 
     # Check for issues in data ----
     # Get var variable types
     var_types <- df[,(colnames(df) %in% var)] |>
-      sapply(function(x)class(x)) |> unique()
+      lapply(function(x)class(x)) |> unlist() |> unique()
     
     ## Check if variable of interest is in data ----
     if(FALSE %in% (var %in% colnames(df))){ 
@@ -92,16 +93,18 @@ owas_mixed_effects <- compiler::cmpfun(
           as.character() |> 
           unique() |>
           length()) > 2){ 
-        stop("Currently var can only contain a maximum of two unique categories")  
+        stop("Var can only contain a maximum of two unique categories")  
       }
     }  
     # Check if all omics features are in the data
     if(FALSE %in% (omics %in% colnames(df))){ 
-      stop("Not all omics variables are found in the data. Check omics column names.")  
+      stop("Not all omics variables are found in the data:
+           Check omics column names.")  
     }    
     # Check if covars are in data
     if(FALSE %in% (covars %in% colnames(df))){ 
-      stop("Not all covariates are found in the data. Check covariate column names.") 
+      stop("Not all covariates are found in the data:
+           Check covariate column names.") 
     }
     # Check if random effects are in data
     random_effect_vars_all <- gsub("\\|", ",", x = random_effects) |> 
@@ -118,7 +121,7 @@ owas_mixed_effects <- compiler::cmpfun(
     df <- data.table(df)
     
     # Pivot longer on omics 
-    dt_l = melt.data.table(
+    dt_l <- melt.data.table(
       df,
       id.vars = c(var, covars, random_effect_vars),
       measure.vars = omics,
@@ -128,7 +131,7 @@ owas_mixed_effects <- compiler::cmpfun(
     
     
     # Pivot longer on variables 
-    dt_l2 = melt.data.table(
+    dt_l2 <- melt.data.table(
       dt_l,
       id.vars = c("feature_name", "feature_value", covars, random_effect_vars),
       measure.vars = var,
@@ -136,11 +139,11 @@ owas_mixed_effects <- compiler::cmpfun(
       value.name = "var_value")
     
     # Create feature_name_var_name variable
-    dt_l2$ftr_var_group = paste0(dt_l2$feature_name, "_", dt_l2$var_name)
+    dt_l2$ftr_var_group <- paste0(dt_l2$feature_name, "_", dt_l2$var_name)
     
     # relevel var_value to specify correct reference group
     if(var_types == "character" | var_types == "factor") { 
-      dt_l2$var_value = ifelse(dt_l2$var_value == ref_group, 0, 1)
+      dt_l2$var_value <- ifelse(dt_l2$var_value == ref_group, 0, 1)
     }
     
     # Set formula for model ------------------
@@ -149,7 +152,9 @@ owas_mixed_effects <- compiler::cmpfun(
       # If variable is exposure: 
       if(is.null(covars)){
         # mod_formula <- paste0("feature_value~", var)
-        mod_formula <- paste0("feature_value~var_value+(",random_effects, ")") |> 
+        mod_formula <- paste0("feature_value~var_value+(",
+                              random_effects, 
+                              ")") |> 
           as.formula()
       } else {
         mod_formula <- paste0("feature_value~", 
@@ -162,7 +167,9 @@ owas_mixed_effects <- compiler::cmpfun(
     } else if(var_exposure_or_outcome == "outcome"){
       # If variable is outcome: 
       if(is.null(covars)){
-        mod_formula <- paste0("var_value~feature_value+(",random_effects, ")") |> 
+        mod_formula <- paste0("var_value~feature_value+(",
+                              random_effects, 
+                              ")") |> 
           as.formula()
       } else{
         mod_formula <- paste0("var_value~", 
@@ -172,7 +179,8 @@ owas_mixed_effects <- compiler::cmpfun(
       }
       
     } else {
-      stop("var_exposure_or_outcome must be either \"exposure\" or \"outcome\" ")
+      stop(
+        "var_exposure_or_outcome must be either \"exposure\" or \"outcome\" ")
     }
     
     
@@ -182,7 +190,9 @@ owas_mixed_effects <- compiler::cmpfun(
       if(family == "gaussian"){
         # Linear models:
         res <- dt_l2[, 
-                     {fit <- lmerTest::lmer(mod_formula, data = .SD, REML = REML) |>
+                     {fit <- lmerTest::lmer(mod_formula, 
+                                            data = .SD, 
+                                            REML = REML) |>
                        summary() |> 
                        coef()
                      fit[nrow(fit), ]# Select last row of fixed effects
@@ -190,7 +200,11 @@ owas_mixed_effects <- compiler::cmpfun(
                      by = ftr_var_group]
         
         # Add column for estimate 
-        res <- cbind(res, c("estimate", "se", "df", "test_statistic", "p_value"))
+        res <- cbind(res, c("estimate",
+                            "se", 
+                            "df", 
+                            "test_statistic",
+                            "p_value"))
         
         # Pivot wider
         final_results <- dcast(data = res, 
@@ -226,7 +240,9 @@ owas_mixed_effects <- compiler::cmpfun(
       if(family == "gaussian"){
         # Linear models:
         res <- dt_l2[, 
-                     {fit <- lmerTest::lmer(mod_formula, data = .SD, REML = REML)
+                     {fit <- lmerTest::lmer(mod_formula, 
+                                            data = .SD, 
+                                            REML = REML)
                      coef_out <- fit |> summary() |> coef()
                      confint_out <- confint.merMod(fit, method = "Wald")
                      out <- coef_out[nrow(coef_out), ]# Select last row
@@ -289,10 +305,10 @@ owas_mixed_effects <- compiler::cmpfun(
                              by = "ftr_var_group")
     
     # Calculate adjusted p value
-    final_results_2$adjusted_pval = p.adjust(final_results_2$p_value,
+    final_results_2$adjusted_pval <- p.adjust(final_results_2$p_value,
                                              method = "fdr")
     
-    final_results_2$threshold = ifelse(final_results_2$p_value < alpha,
+    final_results_2$threshold <- ifelse(final_results_2$p_value < alpha,
                                        "Significant",
                                        "Non-significant")
     

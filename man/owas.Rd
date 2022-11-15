@@ -34,8 +34,8 @@ they must all be of the same \code{family}.}
 (independent variable) or outcome (dependent variable)? Must be either
 "exposure" or "outcome"}
 
-\item{family}{"gaussian" (defualt) for linear models (via lm) or "binomial" for
-logistic (via glm)}
+\item{family}{"gaussian" (defualt) for linear models (via lm) or "binomial"
+for logistic (via glm)}
 
 \item{confidence_level}{Confidence level for marginal significance
 (defaults to 0.95, or an alpha of 0.05)}
@@ -61,8 +61,8 @@ threshold: Marginal significance, based on unadjusted p-values
 \description{
 Implements an omics wide association study with the option of using the
 'omics data as either the dependent variable (i.e., for performing an
-exposure --> 'omics analysis) or using the 'omics as the independent variable
-(i.e., for performing an 'omics --> outcome analysis). Allows for either
+exposure --> 'omics analysis) or using the 'omics as the independent
+variable (i.e., for performing an 'omics --> outcome analysis). Allows for either
 continuous or dichotomous outcomes, and provides the option to adjust for
 covariates.
 }
@@ -72,7 +72,7 @@ data("example_data")
 
 # Get names of omics
 colnames_omic_fts <- colnames(example_data)[grep("feature_",
-                                              colnames(example_data))]
+                                              colnames(example_data))][1:10]
 
 # Get names of exposures
 expnms = c("exposure1", "exposure2", "exposure3")

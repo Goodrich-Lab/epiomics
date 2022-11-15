@@ -2,10 +2,10 @@
 #' @description 
 #' Implements an omics wide association study with the option of using the 
 #' 'omics data as either the dependent variable (i.e., for performing an 
-#' exposure --> 'omics analysis) or using the 'omics as the independent variable 
-#' (i.e., for performing an 'omics --> outcome analysis). Allows for either 
-#' continuous or dichotomous outcomes, and provides the option to adjust for 
-#' covariates. 
+#' exposure --> 'omics analysis) or using the 'omics as the independent
+#'  variable (i.e., for performing an 'omics --> outcome analysis). Allows for
+#'  either continuous or dichotomous outcomes, and provides the option to 
+#'  adjust for covariates. 
 #' 
 #' @import data.table
 #' @importFrom stats binomial coef glm lm p.adjust confint confint.default 
@@ -22,8 +22,8 @@
 #' @param var_exposure_or_outcome Is the variable of interest an exposure 
 #' (independent variable) or outcome (dependent variable)? Must be either
 #' "exposure" or "outcome"
-#' @param family "gaussian" (defualt) for linear models (via lm) or "binomial" for 
-#' logistic (via glm) 
+#' @param family "gaussian" (defualt) for linear models (via lm) or "binomial"
+#'  for logistic (via glm) 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95, or an alpha of 0.05)
 #' @param conf_int Should Confidence intervals be generated for the estimates? 
@@ -49,7 +49,7 @@
 #' 
 #' # Get names of omics
 #' colnames_omic_fts <- colnames(example_data)[grep("feature_",
-#'                                               colnames(example_data))]
+#'                                               colnames(example_data))][1:10]
 #' 
 #' # Get names of exposures
 #' expnms = c("exposure1", "exposure2", "exposure3")
@@ -90,11 +90,11 @@ owas <- compiler::cmpfun(
            ref_group = NULL){
     df <- base::as.data.frame(df)
     final_col_names <- ftr_var_group <- NULL
-    alpha = 1-confidence_level
+    alpha <- 1-confidence_level
     # Check for issues in data ----
     # Get var variable types
     var_types <- df[,(colnames(df) %in% var)] |>
-      sapply(function(x)class(x)) |> unique()
+      lapply(function(x)class(x)) |> unlist() |> unique()
     
     ## Check if variable of interest is in data ----
     if(FALSE %in% (var %in% colnames(df))){ 
@@ -117,24 +117,37 @@ owas <- compiler::cmpfun(
            as.character() |> 
            unique() |>
            length()) > 2){ 
-        stop("Currently var can only contain a maximum of two unique categories")  
+        stop("Var can only contain a maximum of two unique categories")  
       }
     }  
-    # Check if all omics features are in the data
+    ## Check if all omics features are in the data ----
     if(FALSE %in% (omics %in% colnames(df))){ 
-      stop("Not all omics variables are found in the data. Check omics column names.")  
+      stop(
+        "Not all omics vars are found in the data. Check omics column names.")  
     }    
-    # Check if covars are in data
+    ## Check if covars are in data ----
     if(FALSE %in% (covars %in% colnames(df))){ 
-      stop("Not all covariates are found in the data. Check covariate column names.") 
+      stop(
+        "Not all covars are found in the data. Check covar column names."
+      ) 
     }    
+    ## Check that var is specified
+    if(!(var_exposure_or_outcome %in% c("exposure", "outcome"))){ 
+      stop(
+        "var_exposure_or_outcome must be either \"exposure\" or \"outcome\" "
+      )
+    }
+    ## Check that family is specified
+    if(!(family %in% c("gaussian", "binomial"))){ 
+      stop("family must be either \"gaussian\" or \"binomial\" ")
+    }
     
     
     # Change data frame to data table for speed
     df <- data.table(df)
     
     # Pivot longer on omics 
-    dt_l = melt.data.table(
+    dt_l <- melt.data.table(
       df,
       id.vars = c(var, covars),
       measure.vars = omics,
@@ -143,7 +156,7 @@ owas <- compiler::cmpfun(
     )
     
     # Pivot longer on variables 
-    dt_l2 = melt.data.table(
+    dt_l2 <- melt.data.table(
       dt_l,
       id.vars = c("feature_name", "feature_value", covars),
       measure.vars = var,
@@ -151,11 +164,11 @@ owas <- compiler::cmpfun(
       value.name = "var_value")
     
     # Create feature_name_var_name variable
-    dt_l2$ftr_var_group = paste0(dt_l2$feature_name, "_", dt_l2$var_name)
+    dt_l2$ftr_var_group <- paste0(dt_l2$feature_name, "_", dt_l2$var_name)
     
     # relevel var_value to specify correct reference group
     if(var_types == "character" | var_types == "factor") { 
-      dt_l2$var_value = ifelse(dt_l2$var_value == ref_group, 0, 1)
+      dt_l2$var_value <- ifelse(dt_l2$var_value == ref_group, 0, 1)
     }
     
     # Set formula for model ------------------
@@ -182,11 +195,7 @@ owas <- compiler::cmpfun(
                               "+feature_value")
       }
       
-    } else {
-      stop("var_exposure_or_outcome must be either \"exposure\" or \"outcome\" ")
-    }
-    
-    
+    } 
     # Run models -------------------------
     ## If no confidence intervals are requested: -----------------
     if(!conf_int){
@@ -194,8 +203,8 @@ owas <- compiler::cmpfun(
         # Linear models:
         res <- dt_l2[, 
                      {fit <- lm(mod_formula, data = .SD) 
-                     coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                        c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
+                     coef(summary(fit))[nrow(coef(summary(fit))), 
+                                        c(1, 2, 3, 4)]
                      }, 
                      by = ftr_var_group]
         
@@ -213,8 +222,8 @@ owas <- compiler::cmpfun(
                      {fit <- glm(mod_formula, 
                                  data = .SD, 
                                  family=binomial(link='logit')) 
-                     coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                        c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
+                     coef(summary(fit))[nrow(coef(summary(fit))), 
+                                        c(1, 2, 3, 4)] 
                      }, 
                      by = ftr_var_group]
         
@@ -226,8 +235,6 @@ owas <- compiler::cmpfun(
                                ftr_var_group ~ V2, 
                                value.var = "V1")[,c(1, 2, 4, 5, 3)]
         
-      } else {
-        stop("family must be either \"gaussian\" or \"binomial\" ")
       }
       
     } else if(conf_int){
@@ -236,9 +243,9 @@ owas <- compiler::cmpfun(
         # Linear models:
         res <- dt_l2[, 
                      {fit <- lm(mod_formula, data = .SD) 
-                     out <- coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                               c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
-                     ci <- confint(fit)[length(coef(fit)), ]# Select last row
+                     out <- coef(summary(fit))[nrow(coef(summary(fit))), 
+                                               c(1, 2, 3, 4)] 
+                     ci <- confint(fit)[length(coef(fit)), ]
                      c(out,ci)
                      }, 
                      by = ftr_var_group]
@@ -258,9 +265,9 @@ owas <- compiler::cmpfun(
                      {fit <- glm(mod_formula, 
                                  data = .SD, 
                                  family=binomial(link='logit')) 
-                     out <- coef(summary(fit))[nrow(coef(summary(fit))), # Select last row
-                                               c(1, 2, 3, 4)] # Select Estimate, Std Error, statistic, and p_val
-                     ci <- confint.default(fit)[length(coef(fit)), ]# Select last row
+                     out <- coef(summary(fit))[nrow(coef(summary(fit))), 
+                                               c(1, 2, 3, 4)] 
+                     ci <- confint.default(fit)[length(coef(fit)), ]
                      c(out,ci)
                      }, 
                      by = ftr_var_group]
@@ -290,10 +297,10 @@ owas <- compiler::cmpfun(
                              by = "ftr_var_group")
     
     # Calculate adjusted p value
-    final_results_2$adjusted_pval = p.adjust(final_results_2$p_value,
+    final_results_2$adjusted_pval <- p.adjust(final_results_2$p_value,
                                              method = "fdr")
     
-    final_results_2$threshold = ifelse(final_results_2$p_value < alpha,
+    final_results_2$threshold <- ifelse(final_results_2$p_value < alpha,
                                        "Significant",
                                        "Non-significant")
     

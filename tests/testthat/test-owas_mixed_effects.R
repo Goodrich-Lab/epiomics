@@ -99,7 +99,8 @@ test_that("owas_mixed_effects works", {
   est_manual <- res_manual$Estimate
   
   ### Test that single model and mixed model give same estimates
-  est_fxn <- owas_mixed_effects_out[owas_mixed_effects_out$feature_name == "feature_V1", ]$estimate
+  est_fxn <- owas_mixed_effects_out[
+    owas_mixed_effects_out$feature_name == "feature_V1", ]$estimate
   
   testthat::expect_equal(object = est_fxn, 
                          expected = est_manual)
