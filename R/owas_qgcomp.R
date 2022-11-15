@@ -39,7 +39,7 @@
 #' 
 #' # Get names of omics
 #' colnames_omic_fts <- colnames(example_data)[grep("feature_",
-#'                                               colnames(example_data))]
+#'                                               colnames(example_data))][1:5]
 #' 
 #' # Names of exposures in mixture
 #'  exposure_names = c("exposure1", "exposure2", "exposure3")

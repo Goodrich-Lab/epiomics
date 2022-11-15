@@ -8,7 +8,7 @@
 #'  adjust for covariates. 
 #' 
 #' @import data.table
-#' @importFrom stats binomial coef glm lm p.adjust confint confint.default 
+#' @importFrom stats binomial coef glm lm p.adjust confint confint.default na.omit
 #' @export 
 #' @param df Dataset
 #' @param var Name of the variable or variables of interest- this is usually
@@ -113,10 +113,11 @@ owas <- compiler::cmpfun(
         stop("If var is character or factor, ref_group must be specified")  
       } 
       if((df[,(colnames(df) %in% var)] |>
-           as.matrix() |>
-           as.character() |> 
-           unique() |>
-           length()) > 2){ 
+          as.matrix() |>
+          na.omit() |>
+          as.character() |> 
+          unique() |>
+          length()) > 2){ 
         stop("Var can only contain a maximum of two unique categories")  
       }
     }  
@@ -298,11 +299,11 @@ owas <- compiler::cmpfun(
     
     # Calculate adjusted p value
     final_results_2$adjusted_pval <- p.adjust(final_results_2$p_value,
-                                             method = "fdr")
+                                              method = "fdr")
     
     final_results_2$threshold <- ifelse(final_results_2$p_value < alpha,
-                                       "Significant",
-                                       "Non-significant")
+                                        "Significant",
+                                        "Non-significant")
     
     # Reorder 
     final_col_names <- c("var_name", "feature_name", 

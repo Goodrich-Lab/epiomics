@@ -62,9 +62,9 @@ threshold: Marginal significance, based on unadjusted p-values
 Implements an omics wide association study with the option of using the
 'omics data as either the dependent variable (i.e., for performing an
 exposure --> 'omics analysis) or using the 'omics as the independent
-variable (i.e., for performing an 'omics --> outcome analysis). Allows for either
-continuous or dichotomous outcomes, and provides the option to adjust for
-covariates.
+variable (i.e., for performing an 'omics --> outcome analysis). Allows for
+either continuous or dichotomous outcomes, and provides the option to
+adjust for covariates.
 }
 \examples{
 # Load Example Data

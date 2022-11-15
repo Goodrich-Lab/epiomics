@@ -76,7 +76,7 @@ data("example_data")
 
 # Get names of omics
 colnames_omic_fts <- colnames(example_data)[grep("feature_",
-                                              colnames(example_data))]
+                                              colnames(example_data))][1:10]
 
 # Meet in the middle with a dichotomous outcome
 res <- meet_in_middle(df = example_data,
