@@ -1,11 +1,11 @@
-#' Perform 'omics wide association study using qgcomp
+#' Perform omics wide association study using qgcomp
 #' @description 
-#' Implements an omics wide association study using QGComp to model 
+#' Omics wide association study using quantile-based g-Computation 
+#' (as described by Keil et al., (2019) <doi:10.1289/EHP5838>) to examine
 #' associations of exposure mixtures with each individual 'omics feature as an
 #' outcome 'omics data as either the dependent variable. Allows for either 
 #' continuous or dichotomous outcomes, and provides the option to adjust for 
 #' covariates. 
-#' 
 #' @import data.table qgcomp
 #' @importFrom stats binomial coef glm lm p.adjust  
 #' @export 

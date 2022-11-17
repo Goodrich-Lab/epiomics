@@ -2,7 +2,7 @@
 % Please edit documentation in R/owas_qgcomp.R
 \name{owas_qgcomp}
 \alias{owas_qgcomp}
-\title{Perform 'omics wide association study using qgcomp}
+\title{Perform omics wide association study using qgcomp}
 \usage{
 owas_qgcomp(df, expnms, omics, covars = NULL, q = 4, confidence_level = 0.95)
 }
@@ -37,7 +37,8 @@ adjusted_pval: FDR adjusted p-value
 threshold: Marginal significance, based on unadjusted p-values
 }
 \description{
-Implements an omics wide association study using QGComp to model
+Omics wide association study using quantile-based g-Computation
+(as described by Keil et al., (2019) \url{doi:10.1289/EHP5838}) to examine
 associations of exposure mixtures with each individual 'omics feature as an
 outcome 'omics data as either the dependent variable. Allows for either
 continuous or dichotomous outcomes, and provides the option to adjust for

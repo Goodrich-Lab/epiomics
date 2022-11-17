@@ -1,11 +1,11 @@
-# epiomics: Functions for Analyzing 'Omics Data in Observational Studies
+# epiomics: Analysis of Omics Data in Observational Studies
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/JAGoodrich/epiomics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/JAGoodrich/epiomics/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 
-**epiomics** provides a collection of fast and flexible functions for the analysis of 'omics data in observational studies.
+**epiomics** provides a collection of fast and flexible functions for the analysis of omics data in observational studies.
 
 ## Installation
 
@@ -30,8 +30,7 @@ data("example_data")
 
 # Get names of omics
 colnames_omic_fts <- colnames(example_data)[grep("feature_",
-                                               colnames(example_data))]
-                                               
+                                               colnames(example_data))][1:10]
 
 # Get names of traits
 trait_nms = c("disease1", "disease2")
@@ -83,8 +82,7 @@ owas(df = example_data,
 
 The function `meet_in_middle()` conducts meet in the middle screening between an exposure, omics, and an outcome, as described by Cadiou et al., 2021. This function provides the option to adjust for covariates, and allows for either continuous or dichotomous outcomes. Examples are based on the simulated data created above. 
 
-### Meet in the middle with a dichotomous outcome
-
+### Meet in the middle with a dichotomous outcome  
 ``` r
 res <- meet_in_middle(df = example_data,
                       exposure = "exposure1", 
@@ -105,8 +103,6 @@ res <- meet_in_middle(df = example_data,
                       omics = colnames_omic_fts,
                       covars = c("age", "sex"), 
                       outcome_family = "gaussian")
-
-res
 ``` 
 
 
@@ -118,7 +114,5 @@ res <- meet_in_middle(df = example_data,
                       outcome = "weight", 
                       omics = colnames_omic_fts,
                       outcome_family = "gaussian")
-res
 ```
-
 
