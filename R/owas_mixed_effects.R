@@ -27,12 +27,12 @@
 #' @param var_exposure_or_outcome Is the variable of interest an exposure 
 #' (independent variable) or outcome (dependent variable)? Must be either
 #' "exposure" or "outcome"
-#' @param family "gaussian" (defualt) for linear models (via 
+#' @param family "gaussian" (default) for linear models (via 
 #' \link[lmerTest]{lmer}) or "binomial" for logistic (via \link[lme4]{glmer}) 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95, or an alpha of 0.05)
 #' @param REML logical scalar - Should the estimates be chosen to optimize 
-#' the REML criterion (as opposed to the log-likelihood)? Defalt is TRUE
+#' the REML criterion (as opposed to the log-likelihood)? Default is TRUE
 #' @param conf_int Should Confidence intervals be generated for the estimates? 
 #' Default is FALSE. Setting to TRUE will take longer. For logistic models, 
 #' calculates Wald confidence intervals via \code{confint.default}.

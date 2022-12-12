@@ -34,7 +34,7 @@ they must all be of the same \code{family}.}
 (independent variable) or outcome (dependent variable)? Must be either
 "exposure" or "outcome"}
 
-\item{family}{"gaussian" (defualt) for linear models (via lm) or "binomial"
+\item{family}{"gaussian" (default) for linear models (via lm) or "binomial"
 for logistic (via glm)}
 
 \item{confidence_level}{Confidence level for marginal significance

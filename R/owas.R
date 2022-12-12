@@ -22,7 +22,7 @@
 #' @param var_exposure_or_outcome Is the variable of interest an exposure 
 #' (independent variable) or outcome (dependent variable)? Must be either
 #' "exposure" or "outcome"
-#' @param family "gaussian" (defualt) for linear models (via lm) or "binomial"
+#' @param family "gaussian" (default) for linear models (via lm) or "binomial"
 #'  for logistic (via glm) 
 #' @param confidence_level Confidence level for marginal significance 
 #' (defaults to 0.95, or an alpha of 0.05)

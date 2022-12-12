@@ -8,7 +8,7 @@ Authors@R:
            comment = c(ORCID = "0000-0001-6615-0472")))
 Description: A collection of fast and flexible functions for analyzing omics
     data in observational studies. Multiple different approaches for integrating 
-    environmental/genetic factors, omics data, and/or penotype data are 
+    environmental/genetic factors, omics data, and/or phenotype data are 
     implemented. This includes functions for performing omics wide association 
     studies with one or more variables of interest as the exposure or outcome; 
     a function for performing a meet in the middle analysis for linking 
@@ -26,7 +26,9 @@ Imports:
     qgcomp,
     survival, 
     lme4, 
-    lmerTest
+    lmerTest,
+    ggplot2, 
+    ggrepel
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

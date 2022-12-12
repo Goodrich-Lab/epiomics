@@ -40,7 +40,7 @@ they must all be of the same \code{family}.}
 (independent variable) or outcome (dependent variable)? Must be either
 "exposure" or "outcome"}
 
-\item{family}{"gaussian" (defualt) for linear models (via
+\item{family}{"gaussian" (default) for linear models (via
 \link[lmerTest]{lmer}) or "binomial" for logistic (via \link[lme4]{glmer})}
 
 \item{confidence_level}{Confidence level for marginal significance
@@ -51,7 +51,7 @@ Default is FALSE. Setting to TRUE will take longer. For logistic models,
 calculates Wald confidence intervals via \code{confint.default}.}
 
 \item{REML}{logical scalar - Should the estimates be chosen to optimize
-the REML criterion (as opposed to the log-likelihood)? Defalt is TRUE}
+the REML criterion (as opposed to the log-likelihood)? Default is TRUE}
 
 \item{ref_group}{Reference category if the variable of interest is a
 character or factor. If not, can leave empty.}
