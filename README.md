@@ -9,7 +9,13 @@
 
 ## Installation
 
-You can install epiomics from [GitHub](https://github.com/) with:
+You can install epiomics from [CRAN](https://cran.r-project.org/) with:
+``` r
+install.packages("epiomics")
+```
+
+You can download the developmental version of epiomics from 
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
