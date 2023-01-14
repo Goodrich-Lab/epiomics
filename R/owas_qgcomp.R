@@ -24,14 +24,17 @@
 #' (defaults to 0.95, or an alpha of 0.05)
 #' 
 #' @returns 
-#' A data frame with 6 columns:  
-#' feature_name: name of the omics feature   
+#' A data frame with the following columns:  
+#' feature: name of the omics feature   
 #' psi: the model estimate for the feature. For linear models, this is the 
 #' beta; for logistic models, this is the log odds. 
-#' se: Standard error of the estimate
+#' lcl_psi: the lower confidence interval. 
+#' ucl_psi: the upper confidence interval. 
 #' p_value: p-value for the estimate
 #' adjusted_pval: FDR adjusted p-value
 #' threshold: Marginal significance, based on unadjusted p-values 
+#' covariates: the names of covariates in the model, if any
+#' coef_exposure: the individual coefficient of each exposure
 #' 
 #' @examples 
 #' # Load Example Data
