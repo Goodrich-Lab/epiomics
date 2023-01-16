@@ -31,6 +31,7 @@
 #' lcl_psi: the lower confidence interval. 
 #' ucl_psi: the upper confidence interval. 
 #' p_value: p-value for the estimate
+#' test_statistic: t-statistic for psi coefficient
 #' adjusted_pval: FDR adjusted p-value
 #' threshold: Marginal significance, based on unadjusted p-values 
 #' covariates: the names of covariates in the model, if any
@@ -139,6 +140,7 @@ owas_qgcomp <- compiler::cmpfun(
                     c(psi = fit$coef[2],
                       lcl_psi = fit$ci[1],
                       ucl_psi = fit$ci[2],
+                      test_statistic = fit$tstat[2],
                       p_value = fit$pval[2], 
                       fit$fit$coefficients[-1])
                     
@@ -147,6 +149,7 @@ owas_qgcomp <- compiler::cmpfun(
     # Add column for estimate
     res_2 <- t(as.data.frame(res))
     res_2 <- as.data.frame(res_2)
+    res_2$feature <- rownames(res_2)
     rownames(res_2) <- NULL
     
     # Calculate adjusted p value
@@ -155,12 +158,12 @@ owas_qgcomp <- compiler::cmpfun(
     res_2$threshold <- ifelse(res_2$adjusted_pval < alpha,
                               "Significant",
                               "Non-significant")
-    res_2$feature <- rownames(res_2)
     
     # Reorder (select feature then all other cols)
     final_results <- res_2[
       c("feature", "psi.psi1", 
-        "lcl_psi", "ucl_psi", "p_value",
+        "lcl_psi", "ucl_psi", 
+        "p_value", "test_statistic",
         "adjusted_pval", "threshold", 
         paste0("coef_", expnms))
     ]

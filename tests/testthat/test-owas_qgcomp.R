@@ -30,7 +30,7 @@ test_that("owas_qgcomp works", {
   
   # Test that function returns expected dimensions
   testthat::expect_equal(object = ncol(out), 
-                         expected = 11)
+                         expected = 12)
   testthat::expect_equal(object = nrow(out), 
                          expected = length(colnames_omic_fts))
   
