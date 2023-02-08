@@ -17,8 +17,8 @@ Description: A collection of fast and flexible functions for analyzing
     g-Computation (as described by Keil et al., (2019)
     <doi:10.1289/EHP5838>).
 License: GPL (>= 3)
+Depends: R (>= 3.5.0)
 Imports: 
-    compiler,
     data.table,
     ggplot2,
     ggrepel,
