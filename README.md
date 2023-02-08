@@ -3,7 +3,7 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/JAGoodrich/epiomics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/JAGoodrich/epiomics/actions/workflows/R-CMD-check.yaml)
-
+[![Codecov test coverage](https://codecov.io/gh/JAGoodrich/epiomics/branch/main/graph/badge.svg)](https://app.codecov.io/gh/JAGoodrich/epiomics?branch=main)
 <!-- badges: end -->
 
 **epiomics** provides a collection of fast and flexible functions for the analysis of omics data in observational studies.
