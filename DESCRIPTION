@@ -1,6 +1,6 @@
 Package: epiomics
 Title: Analysis of Omics Data in Observational Studies
-Version: 0.0.1
+Version: 1.1.0
 Authors@R: 
     person("Jesse", "Goodrich", , "jagoodri@usc.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6615-0472"))
