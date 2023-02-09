@@ -282,9 +282,7 @@ owas <- compiler::cmpfun(
                                ftr_var_group ~ V2, 
                                value.var = "V1")[,c(1, 4, 6, 7, 5, 3, 2)]
         
-      } else {
-        stop("family must be either \"gaussian\" or \"binomial\" ")
-      }
+      } 
     }
     
     # Separate ftr_var_group back to ftr name and var name ------------
