@@ -2,7 +2,10 @@ citHeader("To cite epiomics in publications use:")
 
 citEntry(
   entry    = "R package",
-  title    = {epiomics: Analysis of Omics Data in Observational Studies},
-  author   = {Jesse Goodrich},
-  note = {R package version 1.1.0}
+  title    = "epiomics: Analysis of Omics Data in Observational Studies",
+  author   = "Jesse Goodrich",
+  note     = "R package version 1.1.0", 
+  textVersion = 
+   paste("J Goodrich","(2023).",
+            "epiomics: Analysis of Omics Data in Observational Studies.")
 )
