@@ -4,7 +4,17 @@
 \alias{owas_qgcomp}
 \title{Perform omics wide association study using qgcomp}
 \usage{
-owas_qgcomp(df, expnms, omics, covars = NULL, q = 4, confidence_level = 0.95)
+owas_qgcomp(
+  df,
+  expnms,
+  omics,
+  covars = NULL,
+  q = 4,
+  confidence_level = 0.95,
+  family = "gaussian",
+  rr = TRUE,
+  run.qgcomp.boot = TRUE
+)
 }
 \arguments{
 \item{df}{Dataset}
@@ -25,6 +35,15 @@ g-computation).}
 
 \item{confidence_level}{Confidence level for marginal significance
 (defaults to 0.95, or an alpha of 0.05)}
+
+\item{family}{Currently only "gaussian" (default) for linear models (via lm)
+or "binomial" for logistic. Defualt is "gaussian".}
+
+\item{rr}{see \code{qgcomp()}}
+
+\item{run.qgcomp.boot}{Should the model be fit with qgcomp.boot? See
+package \link[qgcomp]{qgcomp.boot} for details. Default is TRUE.
+Setting to FALSE decreases computational time.}
 }
 \value{
 A data frame with the following columns:
@@ -75,5 +94,4 @@ out <- owas_qgcomp(df = example_data,
                    q = 4, 
                    confidence_level = 0.95) 
  
-
 }
