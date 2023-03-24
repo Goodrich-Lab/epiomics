@@ -20,7 +20,7 @@ You can download the developmental version of epiomics from [GitHub](https://git
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("Goodrich-La/epiomics")
+devtools::install_github("Goodrich-Lab/epiomics")
 
 library(epiomics)
 ```
