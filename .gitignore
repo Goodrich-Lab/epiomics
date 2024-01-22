@@ -3,5 +3,8 @@
 .RData
 .Ruserdata
 revdep
+depreciated/
 CRAN-SUBMISSION
 cran-comments.md
+.DS_Store
+

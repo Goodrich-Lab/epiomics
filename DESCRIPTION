@@ -22,8 +22,6 @@ Imports:
     data.table,
     ggplot2,
     ggrepel,
-    lme4,
-    lmerTest,
     qgcomp,
     stats,
     survival
