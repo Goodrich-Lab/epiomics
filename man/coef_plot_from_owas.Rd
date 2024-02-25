@@ -11,7 +11,8 @@ coef_plot_from_owas(
   highlight_adj_p = TRUE,
   highlight_adj_p_threshold = 0.05,
   effect_ratio = FALSE,
-  flip_axis = FALSE
+  flip_axis = FALSE,
+  filter_p_threshold = 1
 )
 }
 \arguments{
@@ -37,6 +38,9 @@ the null effect line be centered at 1)? Defaults to FALSE.}
 
 \item{flip_axis}{Flip the x and y axis? Default is FALSE, and the y-axis is
 plotted with the features or variable names.}
+
+\item{filter_p_less_than}{P-value threshold for which features/variables will
+be included in the plot. Default is 1, and all features will be included.}
 }
 \value{
 A ggplot figure

@@ -6,6 +6,10 @@
 #' @importFrom stats reorder
 #' @export 
 #' @param df output from \code{owas} function call, using conf_int = TRUE. 
+#' @param main_cat_var Which variable should be the primary categorical 
+#' variable? Should be either var_name or feature_name. Only relevant if 
+#' both var_name and feature_name have more than one level. Default is NULL,
+#' and the y-axis is chosen as the variable that has more levels. 
 #' @param order_effects Should features be ordered by the mean effect estimate? 
 #' Default is TRUE.
 #' @param highlight_adj_p Should features which meet a specific adjusted p-value 
@@ -15,12 +19,10 @@
 #' which features will be highlighted. Defaults to 0.05.
 #' @param effect_ratio Are the effect estimates on the ratio scale (ie, should
 #' the null effect line be centered at 1)? Defaults to FALSE.
-#' @param main_cat_var Which variable should be the primary categorical 
-#' variable? Should be either var_name or feature_name. Only relevant if 
-#' both var_name and feature_name have more than one level. Default is NULL,
-#' and the y-axis is chosen as the variable that has more levels. 
 #' @param flip_axis Flip the x and y axis? Default is FALSE, and the y-axis is 
 #' plotted with the features or variable names.  
+#' @param filter_p_less_than P-value threshold for which features/variables will 
+#' be included in the plot. Default is 1, and all features will be included.
 #' @returns 
 #' A ggplot figure
 #' 
@@ -50,7 +52,8 @@ coef_plot_from_owas <- compiler::cmpfun(
            highlight_adj_p = TRUE, 
            highlight_adj_p_threshold = 0.05, 
            effect_ratio = FALSE, 
-           flip_axis = FALSE){
+           flip_axis = FALSE, 
+           filter_p_threshold = 1){
     
     estimate <- p_value <- adjusted_pval <- facet_var <- 
       conf_high <- conf_low <- fdr_sig <- NULL
@@ -76,6 +79,13 @@ coef_plot_from_owas <- compiler::cmpfun(
       }
     }
     
+    # Give error if highlight_adj_p_threshold is not between 
+    # 0<highlight_adj_p_threshold<=1
+    if(highlight_adj_p_threshold > 1 | highlight_adj_p_threshold <= 0){
+      stop("highlight_adj_p_threshold must be between 0 and 1")
+    }
+    
+    
     # Set main_cat_var if not specified in function call
     if(is.null(main_cat_var)){
       if(n_var == 1 & n_ftr > 1){
@@ -92,6 +102,9 @@ coef_plot_from_owas <- compiler::cmpfun(
       facet_var <- setdiff(c("feature_name", "var_name"), main_cat_var)
     }  
     
+    # Filter out values based on p-value threshold
+    df <- df[df$p_value < filter_p_less_than, ]
+    
     # Set main_cat_var
     df$main_cat_var <- df[[main_cat_var]]
     # Set facet_var 
@@ -107,6 +120,7 @@ coef_plot_from_owas <- compiler::cmpfun(
       df$main_cat_var <- reorder(df$main_cat_var, df$estimate, FUN = mean)
     }
     
+
     # Color by fdr sig
     df$fdr_sig <- df$adjusted_pval < highlight_adj_p_threshold
     
