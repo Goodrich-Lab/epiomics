@@ -53,7 +53,7 @@ coef_plot_from_owas <- compiler::cmpfun(
            highlight_adj_p_threshold = 0.05, 
            effect_ratio = FALSE, 
            flip_axis = FALSE, 
-           filter_p_threshold = 1){
+           filter_p_less_than = 1){
     
     estimate <- p_value <- adjusted_pval <- facet_var <- 
       conf_high <- conf_low <- fdr_sig <- NULL
