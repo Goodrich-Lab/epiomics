@@ -1,3 +1,5 @@
+# epiomics 1.1.0
+
 # epiomics 1.0.0
 
 * Major updates and added additional functionality to owas_qgcomp.R function, 
