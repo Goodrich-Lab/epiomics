@@ -23,7 +23,7 @@
 #' plotted with the features or variable names.  
 #' @param filter_p_less_than P-value threshold for which features/variables will 
 #' be included in the plot. Default is 1, and all features will be included.
-#' @returns 
+#' @return
 #' A ggplot figure
 #' 
 #' @examples 
