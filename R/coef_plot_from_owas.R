@@ -173,6 +173,6 @@ coef_plot_from_owas <- compiler::cmpfun(
     }
     
     # return plot
-    main_plot 
+    return(main_plot) 
   }
 )
