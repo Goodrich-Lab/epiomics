@@ -10,37 +10,43 @@ test_that("coef_plot works with a single var", {
          colnames(example_data))][1:5]
   
   # Run function with continuous exposure as the variable of interest
-  owas_out <- owas(df = example_data,
+  coefplot <- owas(df = example_data,
                    var = "exposure1",
                    omics = colnames_omic_fts,
                    covars = c("age", "sex"),
                    var_exposure_or_outcome = "exposure",
                    family = "gaussian", 
                    conf_int = TRUE) |> 
-    coef_plot_from_owas() |> 
-    length() |> 
-    testthat::expect_equal(expected = 9)
+    coef_plot_from_owas()
+  
+  testthat::expect_equal(object = coefplot$data$threshold, 
+                         expected = c("Significant",
+                                      rep("Non-significant", 4)))
+  
   
   # Test error for no CI's
   owas(df = example_data,
        var = "exposure1",
        omics = colnames_omic_fts,
-       covars = c("age", "sex"),
+       covars = c("age", "sex"), 
        var_exposure_or_outcome = "exposure",
        family = "gaussian") |> 
     coef_plot_from_owas() |>
     testthat::capture_error() 
   
   # Check with multiple exposures
-  owas(df = example_data,
+  coefplot <- owas(df = example_data,
        var = c("exposure1", "exposure2"),
        omics = colnames_omic_fts,
        covars = c("age", "sex"),
        var_exposure_or_outcome = "exposure",
        family = "gaussian", 
        conf_int = TRUE) |> 
-    coef_plot_from_owas(main_cat_var = "feature_name") |>
-    length() |>
-    testthat::expect_equal(expected = 9)
+    coef_plot_from_owas(main_cat_var = "feature_name") 
+  
+  
+    testthat::expect_equal(object = coefplot$data$threshold, 
+                           expected = c("Significant",
+                                        rep("Non-significant", 9)))
   
 })
